@@ -43,6 +43,6 @@ def login(request:Annotated[OAuth2PasswordRequestForm, Depends()],db:Session =De
 
 
 
-@router.get("/logout")
+@router.post("/logout")
 def logout():
-    pass
+    return {"message": "Successfully logged out"}
