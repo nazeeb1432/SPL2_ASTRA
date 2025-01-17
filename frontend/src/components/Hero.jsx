@@ -1,5 +1,7 @@
 import React from 'react';
-import heroImage from '../assets/student_headphone1.jpeg'; // Place the image in the assets folder
+import heroImage from '../assets/student_headphone1.jpeg'; 
+import { Link } from 'react-router-dom';
+// Place the image in the assets folder
 
 const Hero = () => {
   return (
@@ -9,7 +11,7 @@ const Hero = () => {
         <p className="mt-4 text-gray-700 font-bold text-2xl">
           Empower your learning with advanced text-to-speech technology, document management, and progress tracking. Join the revolution of smarter studying today!
         </p>
-        <button type="button" className="text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 font-medium rounded-lg text-lg px-5 py-2.5 text-center me-2 mb-2 mt-4 ">Get Started</button>
+        <button type="button" className="text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 font-medium rounded-lg text-lg px-5 py-2.5 text-center me-2 mb-2 mt-4 "><Link to="/signup">Get Started</Link></button>
       </div>
       <div className="md:w-1/2 mt-8 md:mt-0">
         <img src={heroImage} alt="Student studying with headphones" className="rounded-3xl shadow-md" />
