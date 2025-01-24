@@ -25,7 +25,7 @@ const Login = () => {
             emailHandle(inputs.email);
             tokenize(response.data.access_token);
             login();
-            navigate("/library");
+            navigate("/base");
           } catch (error) {
             if (error.response?.status === 404) {
               alert("Invalid credentials. Redirecting to signup.");

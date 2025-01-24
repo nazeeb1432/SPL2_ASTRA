@@ -1,11 +1,38 @@
 import { useState } from "react";
 import { FiUpload } from "react-icons/fi";
+import api from "../utils/api";
+import { useNavigate } from "react-router-dom"; 
 
-const UploadSection = () => {
+const UploadSection = ( { userEmail }) => {
   const [file, setFile] = useState(null);
+  const navigate = useNavigate();
 
-  const handleFileUpload = (event) => {
-    setFile(event.target.files[0]);
+  const handleFileUpload = async (event) => {
+    const uploadedFile= event.target.files[0];
+    setFile(uploadedFile);
+
+    if(!uploadedFile) return;
+
+    const formData = new FormData();
+    formData.append("file", uploadedFile);
+    formData.append("user_id", userEmail);
+
+    try {
+      const response = await api.post("/documents/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const documentId = response.data.document_id;
+
+      navigate(`/document/${documentId}`);
+    }
+
+    catch (error) {
+      console.error("Upload Error:", error);
+      alert("Failed to upload file. Please try again.");      
+    }
   };
 
   return (
