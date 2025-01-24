@@ -5,6 +5,7 @@ import Signup from './pages/Signup'
 import Login from './pages/Login'
 import Library from './pages/Library';
 import Base from './pages/Base';
+import DocumentReader from './pages/DocumentReader';
 
 function App() {
   
@@ -19,6 +20,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/library" element={<Library/>}/>
         <Route path="/base" element={<Base/>}/>
+        <Route path="/document/:documentId" element={<DocumentReader />} />
       </Routes>
     </Router>
     </>
