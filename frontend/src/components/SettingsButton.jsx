@@ -1,6 +1,6 @@
 import { FiSettings } from 'react-icons/fi';
 
-const Settings = () => {
+const SettingsButton = () => {
 
     const handleSettings = () => {};
     return (
@@ -13,3 +13,5 @@ const Settings = () => {
         </button>
     );
 }
+
+export default SettingsButton;
