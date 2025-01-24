@@ -4,7 +4,7 @@ import {useNavigate} from "react-router-dom";
 const AuthContext = createContext();
 
 const useAuthContext=()=>{
-    return useContext(AuthContext);//to access values
+    return useContext(AuthContext); 
 }
 
 const AuthContextProvider=({children})=>{

@@ -8,3 +8,5 @@ pyjwt
 python-multipart
 python-decouple
 sqlite-utils
+pymupdf
+pytesseract
