@@ -10,12 +10,10 @@ const UploadSection = () => {
 
   return (
     <main className="flex-1 bg-gray-50 p-8 overflow-auto">
-      <h1 className="text-2xl font-semibold mb-4">Upload Your Content</h1>
-
-      {/* Upload Section */}
+      <h1 className="text-2xl font-semibold mb-6">Upload Your Content</h1>
       <label
         htmlFor="file-upload"
-        className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-8 bg-white text-gray-500 cursor-pointer hover:bg-gray-100"
+        className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-20 bg-white text-gray-500 cursor-pointer hover:bg-gray-100"
       >
         <FiUpload className="text-3xl mb-2" />
         <span>Drag & Drop files here or click to browse</span>
