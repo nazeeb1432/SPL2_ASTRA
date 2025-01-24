@@ -7,9 +7,9 @@ const Library = () => {
   const {email} = useAuthContext();
   return (
     <>
-     <div>Library</div>
-      <div>{email}</div><br/>
-      <LogoutButton />
+      <div>
+        
+      </div>
     </>
   )
 }
