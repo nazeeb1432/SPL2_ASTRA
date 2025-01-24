@@ -4,6 +4,7 @@ import Home from './pages/Home'
 import Signup from './pages/Signup'
 import Login from './pages/Login'
 import Library from './pages/Library';
+import Base from './pages/Base';
 
 function App() {
   
@@ -17,6 +18,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/library" element={<Library/>}/>
+        <Route path="/base" element={<Base/>}/>
       </Routes>
     </Router>
     </>
