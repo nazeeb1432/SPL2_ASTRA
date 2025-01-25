@@ -37,7 +37,7 @@ const Signup = () => {
             emailHandle(inputs.email);
             tokenize(response.data.token);//assuming the backend includes a token
             login();//to set the isLoggedin state to true
-            navigate('/library');
+            navigate('/base');
 
         }catch (error) {
             if (error.response?.status === 400) {
