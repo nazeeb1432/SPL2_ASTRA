@@ -43,7 +43,7 @@ const UploadSection = ( { userEmail }) => {
         className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-20 bg-white text-gray-500 cursor-pointer hover:bg-gray-100"
       >
         <FiUpload className="text-3xl mb-2" />
-        <span>Drag & Drop files here or click to browse</span>
+        <span>Upload Your Files Here!</span>
         <input
           id="file-upload"
           type="file"

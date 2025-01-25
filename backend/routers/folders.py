@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from ..models import Folder
+from ..models import Folder, Document  # ✅ Import Document model
 from ..database import get_db
 
 folder_router = APIRouter()
@@ -43,6 +43,14 @@ async def delete_folder(folder_id: int, db: Session = Depends(get_db)):
     folder = db.query(Folder).filter(Folder.folder_id == folder_id).first()
     if not folder:
         raise HTTPException(status_code=404, detail="Folder not found")
+
+    # ✅ Find and delete all documents inside the folder
+    documents = db.query(Document).filter(Document.folder_id == folder_id).all()
+    for doc in documents:
+        db.delete(doc)
+
+    # ✅ Now delete the folder
     db.delete(folder)
     db.commit()
-    return {"message": "Folder deleted successfully"}
+    
+    return {"message": "Folder and all associated documents deleted successfully"}
