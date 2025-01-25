@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from backend import models
 from .database import engine
-from .routers import auth,users,documents
+from .routers import auth,users,documents, folders
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
@@ -23,6 +23,7 @@ print("Tables created successfully!")
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(documents.document_router)
+app.include_router(folders.folder_router)
 
 UPLOAD_DIR = "uploads"
 
