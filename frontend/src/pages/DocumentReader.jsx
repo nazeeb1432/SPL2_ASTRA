@@ -9,7 +9,7 @@ const DocumentReader = () => {
     useEffect(() => {
         const fetchDocument = async () => {
             try {
-                console.log(`📄 Fetching document with ID: ${documentId}`);
+                console.log(`Fetching document with ID: ${documentId}`);
                 const response = await api.get(`/documents/view/${documentId}`);
                 console.log("Document Fetched:", response.data);
                 setDocument(response.data);

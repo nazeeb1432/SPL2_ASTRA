@@ -10,26 +10,25 @@ const LibraryList = ({ currentFolder, refreshLibrary, uploadedFile }) => {
 
   useEffect(() => {
     if (!email) {
-      console.error("❌ userEmail is undefined in LibraryList.jsx");
+      console.error("userEmail is undefined in LibraryList.jsx");
       return;
     }
 
     const fetchDocuments = async () => {
       try {
         const endpoint = currentFolder ? `/folders/${currentFolder}/documents` : `/documents/${email}`;
-        console.log(`📤 Fetching documents from ${endpoint}`);
+        console.log(`Fetching documents from ${endpoint}`);
         const response = await api.get(endpoint);
-        console.log("✅ Documents Fetched:", response.data);
+        console.log("Documents Fetched:", response.data);
         setDocuments(response.data.documents);
       } catch (error) {
-        console.error("❌ Error fetching documents:", error);
+        console.error("Error fetching documents:", error);
       }
     };
 
     fetchDocuments();
   }, [email, currentFolder]);
 
-  // 🔥 Show progress during upload
   useEffect(() => {
     if (uploadedFile) {
       const tempId = Date.now();
@@ -73,20 +72,20 @@ const LibraryList = ({ currentFolder, refreshLibrary, uploadedFile }) => {
             document_id: response.document_id,
             title: uploadedFile.name,
             file_path: response.file_path,
-            folder_id: currentFolder, // ✅ Ensure it is assigned to the correct folder
+            folder_id: currentFolder, 
             isUploading: false,
           };
 
           setDocuments(prevDocs => [uploadedDoc, ...prevDocs]);
           refreshLibrary();
         } else {
-          console.error("❌ Upload Error:", xhr.responseText);
+          console.error("Upload Error:", xhr.responseText);
           setUploadingDocs(prev => prev.filter(doc => doc.document_id !== tempId));
         }
       };
 
       xhr.onerror = () => {
-        console.error("❌ Network Error during upload");
+        console.error("Network Error during upload");
         setUploadingDocs(prev => prev.filter(doc => doc.document_id !== tempId));
       };
 
@@ -95,17 +94,16 @@ const LibraryList = ({ currentFolder, refreshLibrary, uploadedFile }) => {
   }, [uploadedFile]);
 
   const handleDeleteDocument = async (documentId) => {
-    console.log(`🗑 Deleting document with ID: ${documentId}`);
+    console.log(`Deleting document with ID: ${documentId}`);
 
     try {
       await api.delete(`http://localhost:8000/documents/delete/${documentId}`);
-      console.log("✅ Document deleted successfully");
+      console.log("Document deleted successfully");
 
-      // ✅ Instantly update the UI
       setDocuments(prevDocs => prevDocs.filter(doc => doc.document_id !== documentId));
 
     } catch (error) {
-      console.error("❌ Error deleting document:", error);
+      console.error("Error deleting document:", error);
     }
   };
 
@@ -113,7 +111,7 @@ const LibraryList = ({ currentFolder, refreshLibrary, uploadedFile }) => {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
       {documents.length > 0 || uploadingDocs.length > 0 ? (
         [...uploadingDocs, ...documents]
-          .filter(doc => currentFolder ? doc.folder_id === currentFolder : doc.folder_id === null) // ✅ Show only correct files
+          .filter(doc => currentFolder ? doc.folder_id === currentFolder : doc.folder_id === null) 
           .map((doc) => (
             <div key={doc.document_id} className="p-5 bg-white border rounded-lg shadow-lg">
               <h3 className="font-semibold">

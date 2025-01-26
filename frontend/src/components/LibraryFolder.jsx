@@ -12,7 +12,7 @@ const LibraryFolder = ({ folder, renameFolder, deleteFolder, refreshLibrary, ope
     const file = event.target.files[0];
     if (!file || !email) return;
 
-    console.log(`📤 Uploading file: ${file.name} to folder: ${folder.folder_id}`);
+    console.log(`Uploading file: ${file.name} to folder: ${folder.folder_id}`);
 
     const formData = new FormData();
     formData.append("file", file);
@@ -24,12 +24,12 @@ const LibraryFolder = ({ folder, renameFolder, deleteFolder, refreshLibrary, ope
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      console.log("✅ Upload successful");
+      console.log("Upload successful");
       if (typeof refreshLibrary === "function") {
         refreshLibrary();
       }
     } catch (error) {
-      console.error("❌ Upload Error:", error.response?.data || error);
+      console.error("Upload Error:", error.response?.data || error);
     }
   };
 

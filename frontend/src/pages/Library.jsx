@@ -26,7 +26,7 @@ const LibraryPage = () => {
         const response = await api.get(`/folders/${email}`);
         setFolders(response.data.folders);
       } catch (error) {
-        console.error("❌ Error fetching folders:", error);
+        console.error("Error fetching folders:", error);
       }
     };
 
@@ -36,7 +36,7 @@ const LibraryPage = () => {
         const response = await api.get(endpoint);
         setDocuments(response.data.documents);
       } catch (error) {
-        console.error("❌ Error fetching documents:", error);
+        console.error("Error fetching documents:", error);
       }
     };
 
@@ -50,12 +50,12 @@ const LibraryPage = () => {
       const response = await api.get(endpoint);
       setDocuments(response.data.documents);
     } catch (error) {
-      console.error("❌ Error refreshing documents:", error);
+      console.error("Error refreshing documents:", error);
     }
   };
 
   const openFolder = (folderId) => {
-    console.log(`📂 Opening folder: ${folderId}`);
+    console.log(`Opening folder: ${folderId}`);
     setCurrentFolder(folderId);
   };
 
@@ -70,40 +70,35 @@ const LibraryPage = () => {
 
   const currentFolderName = folders.find(folder => folder.folder_id === currentFolder)?.folder_name || "Folder";
 
-  // ✅ Open modal for creating or renaming a folder
   const handleFolderAction = (type, folderId = null, folderName = "") => {
     setFolderAction({ isOpen: true, type, folderId, folderName });
   };
 
-  // ✅ Create or rename folder based on modal input
   const handleFolderSubmit = async () => {
     if (!folderAction.folderName.trim()) return;
 
     if (folderAction.type === "create") {
-      console.log(`📂 Creating folder: ${folderAction.folderName}`);
+      console.log(`Creating folder: ${folderAction.folderName}`);
       const tempFolder = {
         folder_id: Date.now(),
         folder_name: folderAction.folderName,
       };
 
-      // ✅ Add folder instantly to the UI before API response
       setFolders(prevFolders => [...prevFolders, tempFolder]);
 
       try {
         const response = await api.post("/folders/create", { user_id: email, folder_name: folderAction.folderName });
 
-        // ✅ Replace temporary folder with actual folder from API
         setFolders(prevFolders =>
           prevFolders.map(folder =>
             folder.folder_id === tempFolder.folder_id ? response.data.folder : folder
           )
         );
 
-        console.log("✅ Folder created successfully:", response.data.folder);
+        console.log("Folder created successfully:", response.data.folder);
       } catch (error) {
-        console.error("❌ Error creating folder:", error);
+        console.error("Error creating folder:", error);
 
-        // ❌ Remove the temporary folder if API request fails
         setFolders(prevFolders => prevFolders.filter(folder => folder.folder_id !== tempFolder.folder_id));
       }
     } else if (folderAction.type === "rename") {
@@ -112,14 +107,13 @@ const LibraryPage = () => {
       try {
         await api.put(`/folders/rename/${folderAction.folderId}`, { folder_name: folderAction.folderName });
 
-        // ✅ Update the UI instantly
         setFolders(prevFolders =>
           prevFolders.map(folder =>
             folder.folder_id === folderAction.folderId ? { ...folder, folder_name: folderAction.folderName } : folder
           )
         );
       } catch (error) {
-        console.error("❌ Error renaming folder:", error);
+        console.error("Error renaming folder:", error);
       }
     }
 
@@ -127,17 +121,17 @@ const LibraryPage = () => {
   };
 
   const deleteFolder = async (folderId) => {
-    console.log(`🗑 Deleting folder with ID: ${folderId}`);
+    console.log(`Deleting folder with ID: ${folderId}`);
 
     try {
       await api.delete(`/folders/delete/${folderId}`);
-      console.log("✅ Folder deleted successfully");
+      console.log("Folder deleted successfully");
 
-      // ✅ Instantly update the UI
+  
       setFolders(prevFolders => prevFolders.filter(folder => folder.folder_id !== folderId));
 
     } catch (error) {
-      console.error("❌ Error deleting folder:", error);
+      console.error("Error deleting folder:", error);
     }
   };
 
@@ -189,7 +183,6 @@ const LibraryPage = () => {
         )}
       </div>
 
-      {/* ✅ Folder Action Modal */}
       {folderAction.isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-5 rounded-md shadow-md">
