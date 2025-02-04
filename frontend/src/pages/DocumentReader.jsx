@@ -56,8 +56,14 @@ const DocumentReader = () => {
 
     useEffect(() => {
         const fetchDocument = async () => {
-            const response = await api.get(`/documents/view/${documentId}`);
-            setDocument(response.data);
+            try {
+                console.log(`Fetching document with ID: ${documentId}`);
+                const response = await api.get(`/documents/view/${documentId}`);
+                console.log("Document Fetched:", response.data);
+                setDocument(response.data);
+            } catch (error) {
+                console.error("Error fetching document:", error);
+            }
         };
 
         const fetchVoices = async () => {
