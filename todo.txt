@@ -1,4 +1,3 @@
 Fix Drag & Drop
 Content Library Design 
 Adding Folders 
-Only works for pdf files
