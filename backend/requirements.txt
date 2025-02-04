@@ -10,3 +10,4 @@ python-decouple
 sqlite-utils
 pymupdf
 pytesseract
+TTS

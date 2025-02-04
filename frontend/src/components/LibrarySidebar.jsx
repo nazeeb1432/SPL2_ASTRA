@@ -14,14 +14,13 @@ const LibrarySidebar = ({ createFolder, refreshLibrary, onFileUpload, currentFol
     const file = event.target.files[0];
     if (!file || !email) return;
 
-    console.log(`📤 Uploading file: ${file.name} for user: ${email} in folder: ${currentFolder || "Library"}`);
+    console.log(`Uploading file: ${file.name} for user: ${email} in folder: ${currentFolder || "Library"}`);
 
-    onFileUpload({ file, folderId: currentFolder }); // ✅ Ensure correct folder ID assignment
-
+    onFileUpload({ file, folderId: currentFolder }); 
     const formData = new FormData();
     formData.append("file", file);
     formData.append("user_id", email);
-    if (currentFolder) formData.append("folder_id", currentFolder); // ✅ Attach folder ID if inside a folder
+    if (currentFolder) formData.append("folder_id", currentFolder); 
 
     setIsUploading(true);
     setUploadProgress(0);
@@ -35,12 +34,12 @@ const LibrarySidebar = ({ createFolder, refreshLibrary, onFileUpload, currentFol
         },
       });
 
-      console.log("✅ Upload successful");
+      console.log("Upload successful");
       setIsUploading(false);
       setUploadProgress(0);
-      refreshLibrary(); // ✅ Refresh the document list after successful upload
+      refreshLibrary(); 
     } catch (error) {
-      console.error("❌ Upload Error:", error);
+      console.error("Upload Error:", error);
       setIsUploading(false);
       setUploadProgress(0);
     }
@@ -49,7 +48,7 @@ const LibrarySidebar = ({ createFolder, refreshLibrary, onFileUpload, currentFol
   };
 
   return (
-    <div className="w-64 bg-gray-100 p-4 flex flex-col border-r border-gray-300 hidden md:flex">
+    <div className="w-64 bg-gray-100 p-4 flex flex-col border-r border-gray-300 md:flex">
       <button className="flex justify-center items-center gap-2 p-2 bg-blue-500 text-white rounded mb-4" onClick={() => setMenuOpen(!menuOpen)}>
         <AiOutlinePlus /> New
       </button>
