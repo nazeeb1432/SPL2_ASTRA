@@ -23,3 +23,7 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     email: str | None = None
+
+class GenerateAudiobookRequest(BaseModel):
+    voice_id: int
+    user_id:str

@@ -22,8 +22,11 @@ async def upload_document(
         file_path = UPLOAD_DIR / file.filename
         with file_path.open("wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
+        
+        # file_url= f"http://127.0.0.1:8000/uploads/{file.filename}"
+        
 
-        file_url = f"http://127.0.0.1:8000/uploads/{file.filename}"
+    
 
         # Handle PDFs only (avoid errors with other formats)
         if file.filename.lower().endswith(".pdf"):
@@ -44,7 +47,8 @@ async def upload_document(
         new_document = Document(
             title=file.filename,
             user_id=user_id,
-            file_path=str(file_url),
+            # file_path=str(file_url),
+            file_path=str(file_path),
             folder_id=folder_id,  # Associate with folder if provided
             is_scanned=is_scanned,
             progress=0,
@@ -71,10 +75,20 @@ async def view_document(document_id: int, db: Session = Depends(get_db)):
 
     print(f"Serving document: {document.file_path}")
 
+
+    # return {
+    #     "document_id": document.document_id,
+    #     "title": document.title,
+    #     "file_path": document.file_path,
+    # }
+
+    # Convert the local file path to a URL for the frontend
+    file_url = f"http://127.0.0.1:8000/uploads/{Path(document.file_path).name}"
+
     return {
         "document_id": document.document_id,
         "title": document.title,
-        "file_path": document.file_path,
+        "file_path": file_url,  # Return the URL for the frontend
     }
 
 
