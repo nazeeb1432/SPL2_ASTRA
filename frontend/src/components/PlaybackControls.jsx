@@ -37,7 +37,7 @@ const PlaybackControls = ({ audioPath }) => {
                 src={audioPath}
                 controls
                 autoPlay={false}
-                style={{ width: "30%" }}
+                style={{ width: "100%" }}
             />
         </div>
     );
