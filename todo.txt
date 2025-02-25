@@ -1,3 +1,9 @@
 Fix Drag & Drop
 Content Library Design 
 Adding Folders 
+//Nazeeb
+Big task:- how to reduce the time of converting into audio using parallelism?
+adding summarization and keywords generation
+adding ocr
+adding avatars in voice 
+adding streak tracking
