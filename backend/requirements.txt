@@ -11,3 +11,4 @@ sqlite-utils
 pymupdf
 pytesseract
 TTS
+google-generativeai
