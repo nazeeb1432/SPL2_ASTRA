@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import api from "../utils/api";
 import PlaybackControls from "../components/PlaybackControls";
 import { useAuthContext } from "../context/AuthContext";
+import SummarizationPanel from "../components/SummarizationPanel";
 
 const DocumentReader = () => {
     const { documentId } = useParams();
@@ -11,6 +12,8 @@ const DocumentReader = () => {
     const [selectedVoice, setSelectedVoice] = useState("");
     const [audioPath, setAudioPath] = useState("");
     const { email } = useAuthContext();
+    const [showSummarizationPanel, setShowSummarizationPanel] = useState(false);
+
 
     useEffect(() => {
         const fetchDocument = async () => {
@@ -54,6 +57,16 @@ const DocumentReader = () => {
 
     const onDocumentLoadSuccess = ({ numPages }) => {
         setNumPages(numPages); // Save the total number of pages of the PDF
+    };
+
+    const handleSummarize = async (text) => {
+        const response = await api.post("api/summarize", { text });
+        return response.data.summary;
+    };
+
+    const handleGenerateKeywords = async (text) => {
+        const response = await api.post("api/generate-keywords", { text });
+        return response.data.keywords;
     };
 
     return (
@@ -104,10 +117,26 @@ const DocumentReader = () => {
                             Generate Audiobook
                         </button>
 
-                        {/* Playback Controls */}
+                        {/* Summarization Button */}
+                        <button
+                            type="button"
+                            onClick={() => setShowSummarizationPanel(!showSummarizationPanel)}
+                            className="w-full bg-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-purple-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                        >
+                            {showSummarizationPanel ? "Hide Summarization" : "Show Summarization"}
+                        </button>
+
                         <PlaybackControls audioPath={audioPath} />
                     </div>
                 </div>
+            )}
+
+            {/* Summarization Panel */}
+            {showSummarizationPanel && (
+                <SummarizationPanel
+                    onSummarize={handleSummarize}
+                    onGenerateKeywords={handleGenerateKeywords}
+                />
             )}
         </div>
     );
