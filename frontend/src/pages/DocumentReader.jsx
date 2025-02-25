@@ -59,7 +59,7 @@ const DocumentReader = () => {
     return (
         <div className="p-6 bg-gray-50 min-h-screen">
             {document && (
-                <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-6">
+                <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-lg p-6">
                     {/* Document Title */}
                     <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">
                         {document.title}
