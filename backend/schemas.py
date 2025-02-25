@@ -27,3 +27,6 @@ class TokenData(BaseModel):
 class GenerateAudiobookRequest(BaseModel):
     voice_id: int
     user_id:str
+
+class TextRequest(BaseModel):
+    text: str
