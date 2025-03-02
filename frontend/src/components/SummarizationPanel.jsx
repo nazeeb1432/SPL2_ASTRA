@@ -32,6 +32,11 @@ const SummarizationPanel = ({ onSummarize, onGenerateKeywords }) => {
         }
     };
 
+    const handleRefresh = () => {
+        setInputText(""); // Clear input text area
+        setOutputText(""); // Clear output text area
+    };
+
     return (
         <div className="fixed right-0 top-0 h-full w-96 bg-white shadow-lg p-6 overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">Summarization & Keywords</h2>
@@ -39,7 +44,7 @@ const SummarizationPanel = ({ onSummarize, onGenerateKeywords }) => {
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder="Enter text to summarize or generate keywords..."
-                className="w-full p-2 border border-gray-300 rounded-lg mb-4"
+                className="w-full p-2 border border-gray-300 rounded-lg mb-4 h-1/3"
                 rows={6}
             />
             <div className="flex space-x-4 mb-4">
@@ -57,12 +62,20 @@ const SummarizationPanel = ({ onSummarize, onGenerateKeywords }) => {
                 >
                     {isLoading ? "Generating..." : "Generate Keywords"}
                 </button>
+
+                <button
+                    onClick={handleRefresh}
+                    className="flex-1 bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700"
+                >
+                    Refresh
+                </button>
+                
             </div>
             <textarea
                 value={outputText}
                 readOnly
                 placeholder="Summary or keywords will appear here..."
-                className="w-full p-2 border border-gray-300 rounded-lg"
+                className="w-full p-2 border border-gray-300 rounded-lg h-1/3"
                 rows={6}
             />
         </div>
