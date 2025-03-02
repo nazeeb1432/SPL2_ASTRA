@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from backend import models
 from .database import engine
-from .routers import auth,users,documents, folders,summarization
+from .routers import auth,users,documents, folders,summarization,notes,bookmarks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from backend.controllers.seedvoice import seed_voices
@@ -32,6 +32,8 @@ app.include_router(documents.document_router)
 app.include_router(audiobook.audiobook_router) 
 app.include_router(folders.folder_router)
 app.include_router(summarization.router)
+app.include_router(notes.router)
+app.include_router(bookmarks.router)
 
 UPLOAD_DIR = "uploads"
 AUDIOBOOK_DIR = "audiobooks"
