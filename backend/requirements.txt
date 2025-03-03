@@ -12,6 +12,9 @@ pymupdf
 pytesseract
 TTS
 google-generativeai
+<<<<<<< HEAD
 
 
 
+=======
+>>>>>>> 908946561f7d4060427e18ea72f0525e92943ef6
