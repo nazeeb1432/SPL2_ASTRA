@@ -30,3 +30,27 @@ class GenerateAudiobookRequest(BaseModel):
 
 class TextRequest(BaseModel):
     text: str
+
+class NoteCreate(BaseModel):
+    document_id: int
+    note_title: str
+    content: str
+    page: int
+
+class NoteResponse(BaseModel):
+    note_id: int
+    document_id: int
+    note_title: str
+    content: str
+    page: int
+
+class BookmarkCreate(BaseModel):
+    document_id: int
+    page_number: int
+    description: str
+
+class BookmarkResponse(BaseModel):
+    bookmark_id: int
+    document_id: int
+    page_number: int
+    description: str

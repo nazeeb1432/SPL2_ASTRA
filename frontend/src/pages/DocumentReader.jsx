@@ -4,6 +4,9 @@ import api from "../utils/api";
 import PlaybackControls from "../components/PlaybackControls";
 import { useAuthContext } from "../context/AuthContext";
 import SummarizationPanel from "../components/SummarizationPanel";
+import NotesPanel from "../components/NotesPanel";
+import BookmarkPanel from "../components/BookmarkPanel";
+import HamburgerMenu from "../components/HamburgerMenu";
 
 const DocumentReader = () => {
     const { documentId } = useParams();
@@ -13,16 +16,14 @@ const DocumentReader = () => {
     const [audioPath, setAudioPath] = useState("");
     const { email } = useAuthContext();
     const [showSummarizationPanel, setShowSummarizationPanel] = useState(false);
-
+    const [showNotesPanel, setShowNotesPanel] = useState(false);
+    const [showBookmarkPanel, setShowBookmarkPanel] = useState(false);
 
     useEffect(() => {
         const fetchDocument = async () => {
             try {
-                console.log(`Fetching document with ID: ${documentId}`);
                 const response = await api.get(`/documents/view/${documentId}`);
-                console.log("Document Fetched:", response.data);
                 setDocument(response.data);
-                setPdfDocument(response.data.file_path);
             } catch (error) {
                 console.error("Error fetching document:", error);
             }
@@ -39,15 +40,12 @@ const DocumentReader = () => {
 
     const generateAudiobook = async () => {
         if (!selectedVoice) return alert("Please select a voice!");
-
         try {
             const response = await api.post(`/audiobooks/generate/${documentId}`, {
                 voice_id: selectedVoice,
                 user_id: email,
             });
-            console.log(response.data);
-            const audioFilePath = response.data.file_path; // Fetch audio path from response
-            setAudioPath(audioFilePath);
+            setAudioPath(response.data.file_path);
             alert("Audiobook generation started!");
         } catch (error) {
             console.error("Error:", error.response?.data || error.message);
@@ -56,21 +54,54 @@ const DocumentReader = () => {
     };
 
     const onDocumentLoadSuccess = ({ numPages }) => {
-        setNumPages(numPages); // Save the total number of pages of the PDF
+                setNumPages(numPages); // Save the total number of pages of the PDF
     };
-
+        
     const handleSummarize = async (text) => {
         const response = await api.post("api/summarize", { text });
         return response.data.summary;
     };
-
+        
     const handleGenerateKeywords = async (text) => {
         const response = await api.post("api/generate-keywords", { text });
         return response.data.keywords;
     };
 
+
+    const handleNavigate = (section) => {
+        if (section === "notes") {
+            setShowNotesPanel(true);
+            setShowBookmarkPanel(false);
+            setShowSummarizationPanel(false);
+            // Scroll down by 800 pixels to show the NotesPanel
+            window.scrollBy({ top: 1000, behavior: "smooth" });
+        } else if (section === "bookmarks") {
+            setShowBookmarkPanel(true);
+            setShowNotesPanel(false);
+            setShowSummarizationPanel(false);
+            // Scroll down by 800 pixels to show the BookmarkPanel
+            window.scrollBy({ top: 1200, behavior: "smooth" });
+        } else if (section === "audiobook") {
+            // Scroll down by 1000 pixels to show the Generate Audiobook button
+            window.scrollBy({ top: 800, behavior: "smooth" });
+        } else if (section === "summarization") {
+            // Scroll down by 1200 pixels to show the Summarization button
+            window.scrollBy({ top: 800, behavior: "smooth" });
+        }
+    };
+
+    const handleNavigateToPage = (pageNumber) => {
+        const iframe = document.querySelector("iframe");
+        if (iframe) {
+            iframe.contentWindow.postMessage({ type: "navigate", page: pageNumber }, "*");
+        }
+    };
+
     return (
         <div className="p-6 bg-gray-50 min-h-screen">
+            {/* Hamburger Menu */}
+            <HamburgerMenu onNavigate={handleNavigate} />
+
             {document && (
                 <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-lg p-6">
                     {/* Document Title */}
@@ -80,7 +111,7 @@ const DocumentReader = () => {
 
                     {/* PDF Viewer */}
                     <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                        <div className="relative pt-[56.25%]"> {/* 16:9 Aspect Ratio Container */}
+                        <div className="relative pt-[56.25%]">
                             <iframe
                                 src={document.file_path}
                                 className="absolute top-0 left-0 w-full h-full"
@@ -110,7 +141,6 @@ const DocumentReader = () => {
 
                         {/* Generate Audiobook Button */}
                         <button
-                            type="button"
                             onClick={generateAudiobook}
                             className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                         >
@@ -119,7 +149,6 @@ const DocumentReader = () => {
 
                         {/* Summarization Button */}
                         <button
-                            type="button"
                             onClick={() => setShowSummarizationPanel(!showSummarizationPanel)}
                             className="w-full bg-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-purple-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
                         >
@@ -128,15 +157,26 @@ const DocumentReader = () => {
 
                         <PlaybackControls audioPath={audioPath} />
                     </div>
-                </div>
-            )}
 
-            {/* Summarization Panel */}
-            {showSummarizationPanel && (
-                <SummarizationPanel
-                    onSummarize={handleSummarize}
-                    onGenerateKeywords={handleGenerateKeywords}
-                />
+                    {/* Notes Panel */}
+                    {showNotesPanel && <NotesPanel documentId={documentId} />}
+
+                    {/* Bookmark Panel */}
+                    {showBookmarkPanel && (
+                        <BookmarkPanel
+                            documentId={documentId}
+                            onNavigate={handleNavigateToPage}
+                        />
+                    )}
+
+                    {/* Summarization Panel */}
+                    {showSummarizationPanel && (
+                        <SummarizationPanel
+                            onSummarize={handleSummarize}
+                            onGenerateKeywords={handleGenerateKeywords}
+                        />
+                    )}
+                </div>
             )}
         </div>
     );
