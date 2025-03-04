@@ -10,7 +10,7 @@ const UploadSection = ( { userEmail }) => {
   const handleFileUpload = async (event) => {
     const uploadedFile= event.target.files[0];
     setFile(uploadedFile);
-
+    console.log("Uploading File:", uploadedFile.name, "Type:", uploadedFile.type); // Log file name and type
     if(!uploadedFile) return;
 
     const formData = new FormData();
