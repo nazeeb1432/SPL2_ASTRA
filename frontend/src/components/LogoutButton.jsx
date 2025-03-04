@@ -2,20 +2,16 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
 import api from "../utils/api";
+import { FiLogOut } from "react-icons/fi";
 
 const LogoutButton = () => {
-  const { logout } = useAuthContext(); // Only need the `logout` function
+  const { logout } = useAuthContext();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
-      // Call the backend logout endpoint
       await api.post("/logout");
-
-      // Clear local authentication state (handled by the `logout` function in AuthContext)
       logout();
-
-      // Redirect to the login page
       navigate("/");
     } catch (error) {
       console.error("Logout Error:", error);
@@ -26,9 +22,11 @@ const LogoutButton = () => {
   return (
     <button
       onClick={handleLogout}
-      className="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg"
+      className="text-red-600 bg-red-50 hover:bg-red-100 px-4 py-2.5 rounded-lg flex items-center gap-2 
+                 transition-colors text-sm font-medium"
     >
-      Logout
+      <FiLogOut className="w-4 h-4" />
+      <span>Logout</span>
     </button>
   );
 };

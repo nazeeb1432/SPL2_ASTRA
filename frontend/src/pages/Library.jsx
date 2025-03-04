@@ -3,15 +3,14 @@ import LibraryTopbar from "../components/LibraryTopbar";
 import LibraryList from "../components/LibraryList";
 import LibrarySidebar from "../components/LibrarySidebar";
 import LibraryFolder from "../components/LibraryFolder";
-import UploadSection from "../components/UploadSection";
 import api from "../utils/api";
 import { useAuthContext } from "../context/AuthContext";
 import Cookies from "js-cookie";
 
 const LibraryPage = () => {
   const { email: contextEmail } = useAuthContext();
-  const email=contextEmail || Cookies.get("email"); 
-  
+  const email = contextEmail || Cookies.get("email");
+
   const [viewMode, setViewMode] = useState("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [folders, setFolders] = useState([]);
@@ -49,11 +48,17 @@ const LibraryPage = () => {
 
   const refreshLibrary = async () => {
     try {
-      const endpoint = currentFolder ? `/folders/${currentFolder}/documents` : `/documents/${email}`;
-      const response = await api.get(endpoint);
-      setDocuments(response.data.documents);
+      // Refresh both folders and documents
+      const foldersResponse = await api.get(`/folders/${email}`);
+      setFolders(foldersResponse.data.folders);
+
+      const docsEndpoint = currentFolder
+        ? `/folders/${currentFolder}/documents`
+        : `/documents/${email}`;
+      const docsResponse = await api.get(docsEndpoint);
+      setDocuments(docsResponse.data.documents);
     } catch (error) {
-      console.error("Error refreshing documents:", error);
+      console.error("Refresh error:", error);
     }
   };
 
@@ -66,9 +71,13 @@ const LibraryPage = () => {
     setCurrentFolder(null);
   };
 
-  const handleFileUpload = (file) => {
-    setUploadedFile({ file, folderId: currentFolder });
-    setUploadTrigger((prev) => prev + 1);
+  const handleFileUpload = (fileData) => {
+    // Add user_id to the uploadedFile object
+    setUploadedFile({
+      ...fileData,
+      user_id: email
+    });
+    setUploadTrigger(prev => prev + 1); // Increment uploadTrigger to trigger re-fetch
   };
 
   const currentFolderName = folders.find(folder => folder.folder_id === currentFolder)?.folder_name || "Folder";
@@ -77,50 +86,29 @@ const LibraryPage = () => {
     setFolderAction({ isOpen: true, type, folderId, folderName });
   };
 
-  const handleFolderSubmit = async () => {
-    if (!folderAction.folderName.trim()) return;
+  const handleFolderSubmit = async (folderName) => {
+    if (!folderName.trim()) return;
 
-    if (folderAction.type === "create") {
-      console.log(`Creating folder: ${folderAction.folderName}`);
-      const tempFolder = {
-        folder_id: Date.now(),
-        folder_name: folderAction.folderName,
-      };
+    const tempFolder = {
+      folder_id: Date.now(),
+      folder_name: folderName.trim(),
+    };
 
-      setFolders(prevFolders => [...prevFolders, tempFolder]);
+    setFolders(prev => [...prev, tempFolder]);
 
-      try {
-        const response = await api.post("/folders/create", { user_id: email, folder_name: folderAction.folderName });
+    try {
+      const response = await api.post("/folders/create", {
+        user_id: email,
+        folder_name: folderName.trim()
+      });
 
-        setFolders(prevFolders =>
-          prevFolders.map(folder =>
-            folder.folder_id === tempFolder.folder_id ? response.data.folder : folder
-          )
-        );
-
-        console.log("Folder created successfully:", response.data.folder);
-      } catch (error) {
-        console.error("Error creating folder:", error);
-
-        setFolders(prevFolders => prevFolders.filter(folder => folder.folder_id !== tempFolder.folder_id));
-      }
-    } else if (folderAction.type === "rename") {
-      console.log(`✏️ Renaming folder ID ${folderAction.folderId} to "${folderAction.folderName}"`);
-
-      try {
-        await api.put(`/folders/rename/${folderAction.folderId}`, { folder_name: folderAction.folderName });
-
-        setFolders(prevFolders =>
-          prevFolders.map(folder =>
-            folder.folder_id === folderAction.folderId ? { ...folder, folder_name: folderAction.folderName } : folder
-          )
-        );
-      } catch (error) {
-        console.error("Error renaming folder:", error);
-      }
+      setFolders(prev => prev.map(folder =>
+        folder.folder_id === tempFolder.folder_id ? response.data.folder : folder
+      ));
+    } catch (error) {
+      console.error("Error creating folder:", error);
+      setFolders(prev => prev.filter(folder => folder.folder_id !== tempFolder.folder_id));
     }
-
-    setFolderAction({ isOpen: false, type: "", folderId: null, folderName: "" });
   };
 
   const deleteFolder = async (folderId) => {
@@ -130,9 +118,7 @@ const LibraryPage = () => {
       await api.delete(`/folders/delete/${folderId}`);
       console.log("Folder deleted successfully");
 
-  
       setFolders(prevFolders => prevFolders.filter(folder => folder.folder_id !== folderId));
-
     } catch (error) {
       console.error("Error deleting folder:", error);
     }
@@ -140,50 +126,66 @@ const LibraryPage = () => {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <LibrarySidebar createFolder={() => handleFolderAction("create")} refreshLibrary={refreshLibrary} onFileUpload={handleFileUpload} />
+      <LibrarySidebar
+        createFolder={handleFolderSubmit}
+        refreshLibrary={refreshLibrary}
+        onFileUpload={handleFileUpload}
+        currentFolder={currentFolder}
+      />
 
-      <div className="flex flex-col flex-1 p-8">
+      <div className="flex flex-col flex-1 overflow-hidden">
+        <LibraryTopbar/>
 
-        {!currentFolder ? (
-          <LibraryTopbar 
-            searchQuery={searchQuery} 
-            setSearchQuery={setSearchQuery} 
-            viewMode={viewMode} 
-            setViewMode={setViewMode} 
-          />
-        ) : (
-          <div className="flex justify-between items-center mb-6 px-4">
-            <h2 className="text-2xl font-bold">{currentFolderName}</h2>
-            <button 
-              onClick={goBackToMainLibrary} 
-              className="px-4 py-2 bg-blue-500 text-white font-semibold rounded-md"
+          <div className="flex-1 overflow-y-auto p-6">
+            {!currentFolder ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                {folders.map((folder) => (
+                  <LibraryFolder
+                    key={folder.folder_id}
+                    folder={folder}
+                    renameFolder={() => handleFolderAction("rename", folder.folder_id, folder.folder_name)}
+                    deleteFolder={() => deleteFolder(folder.folder_id)}
+                    openFolder={openFolder}
+                  />
+                ))}
+              </div>
+            ) : (
+          <div className="mb-6">
+          <div className="flex items-center justify-between mb-6 px-2">
+            <button
+              onClick={goBackToMainLibrary}
+              className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
             >
-              Go Back
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              <span className="font-medium">Back to Library</span>
             </button>
+            <h2 className="text-xl font-semibold text-gray-800">{currentFolderName}</h2>
+            <div className="w-10"></div>
           </div>
-        )}
 
-        {!currentFolder && (
-          <div className="grid grid-cols-4 gap-4">
-            {folders.map(folder => (
-              <LibraryFolder
-                key={folder.folder_id}
-                folder={folder}
-                renameFolder={() => handleFolderAction("rename", folder.folder_id, folder.folder_name)}
-                deleteFolder={() => deleteFolder(folder.folder_id)}
-                openFolder={openFolder}
-              />
-            ))}
+          <LibraryList
+            items={documents}
+            refreshLibrary={refreshLibrary}
+            currentFolder={currentFolder}
+            uploadedFile={uploadedFile}
+          />
           </div>
-        )}
+          )}
 
-        {documents.length > 0 ? (
-          <LibraryList items={documents} refreshLibrary={refreshLibrary} currentFolder={currentFolder} uploadedFile={uploadedFile} />
-        ) : (
-          <div className="flex justify-center items-center min-h-[50vh]">
-            <p className="text-gray-500 text-lg">No Documents Found</p>
+          {documents.length === 0 && !currentFolder && (
+          <div className="flex justify-center items-center h-full">
+          <div className="text-center text-gray-500">
+            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <p className="mt-4 text-lg font-medium">No documents found</p>
+            <p className="mt-1 text-sm">Upload your first file or create a new folder</p>
           </div>
-        )}
+          </div>
+          )}
+          </div>
       </div>
 
       {folderAction.isOpen && (
