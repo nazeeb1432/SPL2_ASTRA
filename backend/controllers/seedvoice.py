@@ -7,8 +7,8 @@ def seed_voices():
         {"voice_id": 1, "voice": "tts_models/en/ljspeech/tacotron2-DDC"},
         {"voice_id": 2, "voice": "tts_models/en/ljspeech/glow-tts"},
         {"voice_id": 3, "voice": "tts_models/en/ljspeech/vits"},
-        {"voice_id": 4, "voice": "tts_models/de/thorsten/tacotron2-DDC"},  # German voice
-        {"voice_id": 5, "voice": "tts_models/fr/css10/vits"},  # French voice
+        {"voice_id": 4, "voice": "tts_models/en/sam/tacotron-DDC"}, 
+        {"voice_id": 5, "voice": "tts_models/fr/css10/vits"},  
     ]
     
     db: Session = SessionLocal()
