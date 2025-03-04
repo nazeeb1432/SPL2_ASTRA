@@ -2,11 +2,13 @@ import { useState, useRef } from "react";
 import { FiMoreVertical } from "react-icons/fi";
 import api from "../utils/api";
 import { useAuthContext } from "../context/AuthContext";
+import Cookies from "js-cookie";
 
 const LibraryFolder = ({ folder, renameFolder, deleteFolder, refreshLibrary, openFolder }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const fileInputRef = useRef(null);
-  const { email } = useAuthContext();
+  const { email: contextEmail } = useAuthContext();
+  const email=contextEmail || Cookies.get("email");
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
