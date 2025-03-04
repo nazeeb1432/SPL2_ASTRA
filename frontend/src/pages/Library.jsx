@@ -6,9 +6,12 @@ import LibraryFolder from "../components/LibraryFolder";
 import UploadSection from "../components/UploadSection";
 import api from "../utils/api";
 import { useAuthContext } from "../context/AuthContext";
+import Cookies from "js-cookie";
 
 const LibraryPage = () => {
-  const { email } = useAuthContext();
+  const { email: contextEmail } = useAuthContext();
+  const email=contextEmail || Cookies.get("email"); 
+  
   const [viewMode, setViewMode] = useState("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [folders, setFolders] = useState([]);

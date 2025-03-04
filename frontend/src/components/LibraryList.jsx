@@ -2,9 +2,11 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../utils/api";
 import { useAuthContext } from "../context/AuthContext";
+import Cookies from "js-cookie";
 
 const LibraryList = ({ currentFolder, refreshLibrary, uploadedFile }) => {
-  const { email } = useAuthContext();
+  const { email: contextEmail } = useAuthContext();
+  const email=contextEmail || Cookies.get("email");
   const [documents, setDocuments] = useState([]);
   const [uploadingDocs, setUploadingDocs] = useState([]); // Track files being uploaded
 

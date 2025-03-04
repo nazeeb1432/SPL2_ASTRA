@@ -2,11 +2,13 @@ import { useState, useRef } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
 import api from "../utils/api";
 import { useAuthContext } from "../context/AuthContext";
+import Cookies from "js-cookie";
 
 const LibrarySidebar = ({ createFolder, refreshLibrary, onFileUpload, currentFolder }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const fileInputRef = useRef(null);
-  const { email } = useAuthContext();
+  const { email: contextEmail } = useAuthContext();
+  const email=contextEmail || Cookies.get("email");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
 
