@@ -4,6 +4,7 @@ import { Link, Router, useSearchParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { useAuthContext } from '../context/AuthContext'
 import api from '../utils/api'
+import Cookies from 'js-cookie'
 
 const Signup = () => {
 
@@ -33,9 +34,18 @@ const Signup = () => {
                 password:inputs.password
             });
 
+           
+
             nameHandle(inputs.name);
             emailHandle(inputs.email);
-            tokenize(response.data.token);//assuming the backend includes a token
+
+            // Assuming the backend will set cookies, not return the token in the body
+            const token = Cookies.get("token");  // Get the token from cookies
+
+            if(token) tokenize(token);
+            else console.error("Token not found in cookies");
+
+
             login();//to set the isLoggedin state to true
             navigate('/base');
 

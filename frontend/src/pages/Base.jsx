@@ -1,10 +1,12 @@
 import Topbar from "../components/Topbar";
 import Sidebar from "../components/Sidebar";
 import UploadSection from "../components/UploadSection";
-import { useAuthContext } from "../context/AuthContext";  // Import user auth context
+import { useAuthContext } from "../context/AuthContext"; 
+import Cookies from "js-cookie"; // Import user auth context
 
 const Base = () => {
-  const { email } = useAuthContext();  // Get userEmail from context
+  const { email: contextEmail } = useAuthContext();
+  const email=contextEmail || Cookies.get("email"); 
   console.log("User email:", email);
   return (
     <div className="flex flex-col h-screen">

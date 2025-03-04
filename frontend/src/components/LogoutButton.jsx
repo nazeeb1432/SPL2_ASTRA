@@ -4,7 +4,7 @@ import { useAuthContext } from "../context/AuthContext";
 import api from "../utils/api";
 
 const LogoutButton = () => {
-  const { logout, tokenize, emailHandle, nameHandle,setIsLoggedIn } = useAuthContext();
+  const { logout } = useAuthContext(); // Only need the `logout` function
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -12,11 +12,8 @@ const LogoutButton = () => {
       // Call the backend logout endpoint
       await api.post("/logout");
 
-      // Clear local authentication state
+      // Clear local authentication state (handled by the `logout` function in AuthContext)
       logout();
-      tokenize("");
-      emailHandle("");
-      nameHandle("");
 
       // Redirect to the login page
       navigate("/");

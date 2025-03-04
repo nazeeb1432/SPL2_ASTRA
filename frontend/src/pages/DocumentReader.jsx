@@ -7,6 +7,7 @@ import SummarizationPanel from "../components/SummarizationPanel";
 import NotesPanel from "../components/NotesPanel";
 import BookmarkPanel from "../components/BookmarkPanel";
 import HamburgerMenu from "../components/HamburgerMenu";
+import Cookies from "js-cookie";
 
 const DocumentReader = () => {
     const { documentId } = useParams();
@@ -14,7 +15,10 @@ const DocumentReader = () => {
     const [voices, setVoices] = useState([]);
     const [selectedVoice, setSelectedVoice] = useState("");
     const [audioPath, setAudioPath] = useState("");
-    const { email } = useAuthContext();
+
+    const { email: contextEmail } = useAuthContext();
+    const email=contextEmail || Cookies.get("email"); 
+
     const [showSummarizationPanel, setShowSummarizationPanel] = useState(false);
     const [showNotesPanel, setShowNotesPanel] = useState(false);
     const [showBookmarkPanel, setShowBookmarkPanel] = useState(false);
