@@ -12,6 +12,3 @@ pymupdf
 pytesseract
 TTS
 google-generativeai
-
-
-
