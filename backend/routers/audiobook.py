@@ -140,12 +140,9 @@ def convert_document_to_audio(file_path: str, audio_file_path: str, voice: str):
     
     if len(text) < 50:  # Adjust this threshold as needed
         raise ValueError("The extracted text is too short to process. Add more content.")
-
-    # Use Coqui TTS to generate the audio file
     
     
     
-    # Generate the audio file using Coqui TTS
     tts.tts_to_file(text=text, file_path=audio_file_path)
     
      

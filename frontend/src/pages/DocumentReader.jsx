@@ -57,6 +57,14 @@ const DocumentReader = () => {
         }
     };
 
+    // useEffect to trigger the audio player reload when audioPath changes
+    useEffect(() => {
+        if (audioPath) {
+            console.log("Audio Path Updated:", audioPath);
+            // Any additional logic to reload the player can be added here
+        }
+    }, [audioPath]);
+
     const onDocumentLoadSuccess = ({ numPages }) => {
                 setNumPages(numPages); // Save the total number of pages of the PDF
     };
