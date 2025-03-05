@@ -30,41 +30,42 @@ const LibrarySidebar = ({ createFolder, refreshLibrary, onFileUpload, currentFol
   }, []);
 
   const handleFileUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file || !email) return;
+  const file = event.target.files[0];
+  if (!file || !email) return;
 
-    console.log(`Uploading file: ${file.name} for user: ${email} in folder: ${currentFolder || "Library"}`);
+  console.log(`Uploading file: ${file.name} for user: ${email} in folder: ${currentFolder || "Library"}`);
 
-    onFileUpload({ file, folderId: currentFolder });
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("user_id", email);
-    if (currentFolder) formData.append("folder_id", currentFolder);
+  onFileUpload({ file, folderId: currentFolder });
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("user_id", email);
+  if (currentFolder) formData.append("folder_id", currentFolder);
 
-    setIsUploading(true);
+  setIsUploading(true);
+  setUploadProgress(0);
+
+  try {
+    await api.post("http://localhost:8000/documents/upload", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+      onUploadProgress: (progressEvent) => {
+        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        setUploadProgress(percentCompleted);
+      },
+    });
+
+    console.log("Upload successful");
+    setIsUploading(false);
     setUploadProgress(0);
+    refreshLibrary(); // Ensure this is called to refresh the UI
+  } catch (error) {
+    console.error("Upload Error:", error);
+    setIsUploading(false);
+    setUploadProgress(0);
+  }
 
-    try {
-      await api.post("http://localhost:8000/documents/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          setUploadProgress(percentCompleted);
-        },
-      });
-
-      console.log("Upload successful");
-      setIsUploading(false);
-      setUploadProgress(0);
-      refreshLibrary();
-    } catch (error) {
-      console.error("Upload Error:", error);
-      setIsUploading(false);
-      setUploadProgress(0);
-    }
-
-    setMenuOpen(false);
-  };
+  setMenuOpen(false);
+};
+ 
 
   const handleCreateFolder = () => {
     const folderName = prompt("Enter folder name:");
