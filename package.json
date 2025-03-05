@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "@headlessui/react": "^2.2.0",
     "js-cookie": "^3.0.5",
     "react-audio-player": "^0.17.0",
     "react-pdf": "^9.2.1"
