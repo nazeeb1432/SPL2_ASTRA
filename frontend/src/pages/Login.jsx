@@ -16,11 +16,20 @@ const Login = () => {
     const handleSubmit= async(e)=>{
         e.preventDefault();
         try {
+            // Step 1: Authenticate the user
+            console.log("Attempting to log in...");
             const response = await api.post("/login", 
                 new URLSearchParams({
                     username: inputs.email, // Use "username" instead of "email"
                     password: inputs.password,
             }));
+
+            console.log("Login Response:", response.data);
+
+            // Step 2: Update the user's streak count
+            console.log("Updating streak count...");
+            const streakResponse = await api.post(`/settings/update-streak/${inputs.email}`);
+            console.log("Streak update response:", streakResponse.data);
       
             emailHandle(inputs.email);
             tokenize(response.data.access_token);

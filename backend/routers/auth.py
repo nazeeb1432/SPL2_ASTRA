@@ -25,6 +25,20 @@ def signup(request:schemas.User,db:Session=Depends(get_db),response: Response = 
     db.commit()
     db.refresh(new_user)
 
+    # Create default settings for the new user
+    default_settings = models.Settings(
+        user_id=new_user.email,  # Use the user's email as the user_id
+        speed=1.0,  # Default speed
+        streak_count=0,  # Default streak count
+        last_login_date=None,  # No last login date initially
+        page_goal=None,  # No page goal initially
+        duration_goal=None,  # No duration goal initially
+        voice_id=None  # No voice preference initially
+    )
+    db.add(default_settings)
+    db.commit()
+    db.refresh(default_settings)
+
     # Generate a token for the new user
     access_token = token.create_access_token(data={"sub": new_user.email})
     # Set cookies
