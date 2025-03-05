@@ -6,9 +6,9 @@ def seed_voices():
     default_voices = [
         {"voice_id": 1, "voice": "tts_models/en/ljspeech/tacotron2-DDC"},
         {"voice_id": 2, "voice": "tts_models/en/ljspeech/glow-tts"},
-        {"voice_id": 3, "voice": "tts_models/en/ljspeech/vits"},
+        {"voice_id": 3, "voice": "tts_models/en/vctk/fast_pitch"},
         {"voice_id": 4, "voice": "tts_models/en/sam/tacotron-DDC"}, 
-        {"voice_id": 5, "voice": "tts_models/fr/css10/vits"},  
+        {"voice_id": 5, "voice": "tts_models/en/jenny/jenny"},  
     ]
     
     db: Session = SessionLocal()

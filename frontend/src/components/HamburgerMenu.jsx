@@ -46,6 +46,12 @@ const HamburgerMenu = ({ onNavigate }) => {
                     >
                         Generate Summarization
                     </button>
+                    <button
+                        onClick={() => handleMenuItemClick("audiobooks")}
+                        className="block w-full text-left font-semibold hover:bg-blue-700 hover:text-white hover:font-bold p-2 rounded-lg"
+                    >
+                        My Audiobooks
+                    </button>
                 </div>
             )}
         </div>
