@@ -155,3 +155,55 @@ async def get_voices(db: Session = Depends(get_db)):
     """Fetch available voices from the database."""
     voices = db.query(Voice).all()
     return {"voices": [{"voice_id": v.voice_id, "name": v.voice} for v in voices]}
+
+
+# @audiobook_router.get("/user/{user_id}")
+# async def get_user_audiobooks(
+#     user_id: str,
+#     db: Session = Depends(get_db)
+# ):
+#     """Fetch all audiobooks for a specific user."""
+#     audiobooks = db.query(AudioBook).filter(AudioBook.user_id == user_id).all()
+    
+#     if not audiobooks:
+#         raise HTTPException(status_code=404, detail="No audiobooks found for this user.")
+    
+#     return {
+#         "audiobooks": [
+#             {
+#                 "audiobook_id": ab.audiobook_id,
+#                 "document_title": ab.document.title,
+#                 "voice_id": ab.voice_id,
+#                 "file_path": ab.file_path,
+#             }
+#             for ab in audiobooks
+#         ]
+#     }
+
+
+@audiobook_router.get("/user/{user_id}")
+async def get_user_audiobooks(
+    user_id: str,
+    db: Session = Depends(get_db)
+):
+    """Fetch all unique audiobooks for a specific user."""
+    # Fetch all audiobooks for the user
+    audiobooks = db.query(AudioBook).filter(AudioBook.user_id == user_id).all()
+    
+    if not audiobooks:
+        raise HTTPException(status_code=404, detail="No audiobooks found for this user.")
+    
+    # Use a dictionary to store unique audiobooks based on document_id and voice_id
+    unique_audiobooks = {}
+    for ab in audiobooks:
+        key = (ab.document_id, ab.voice_id)
+        if key not in unique_audiobooks:
+            unique_audiobooks[key] = {
+                "audiobook_id": ab.audiobook_id,
+                "document_title": ab.document.title,
+                "voice_id": ab.voice_id,
+                "file_path": ab.file_path,
+            }
+    
+    # Convert the dictionary values to a list
+    return {"audiobooks": list(unique_audiobooks.values())}

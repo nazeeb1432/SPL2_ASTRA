@@ -81,7 +81,9 @@ const DocumentReader = () => {
 
 
     const handleNavigate = (section) => {
-        if (section === "notes") {
+        if (section === "audiobooks") {
+            window.location.href = "/audiobooks"; // Navigate to the Audiobook Page
+        } else if (section === "notes") {
             setShowNotesPanel(true);
             setShowBookmarkPanel(false);
             setShowSummarizationPanel(false);
