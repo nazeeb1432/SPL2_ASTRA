@@ -129,6 +129,18 @@ const LibraryPage = () => {
     }
   };
 
+  const renderNoDocumentsFound = () => (
+    <div className="flex justify-center items-center h-[calc(100vh-200px)]">
+      <div className="text-center text-gray-500">
+        <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <p className="mt-4 text-lg font-medium">No documents found</p>
+        <p className="mt-1 text-sm">Upload your first file or create a new folder</p>
+      </div>
+    </div>
+  );
+
   return (
     <div className="flex h-screen bg-gray-50">
       <LibrarySidebar
@@ -142,102 +154,85 @@ const LibraryPage = () => {
         <LibraryTopbar/>
 
         <div className="flex-1 overflow-y-auto p-6">
-  {!currentFolder ? (
-    <div>
-      {/* Folders Section */}
-      {folders.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">Folders</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {folders.map((folder) => (
-              <LibraryFolder
-                key={folder.folder_id}
-                folder={folder}
-                renameFolder={() => handleFolderAction("rename", folder.folder_id, folder.folder_name)}
-                deleteFolder={() => deleteFolder(folder.folder_id)}
-                openFolder={openFolder}
-                refreshLibrary={refreshLibrary}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+          {!currentFolder ? (
+            <div>
+              {/* Folders Section */}
+              {folders.length > 0 && (
+                <div className="mb-8">
+                  <h2 className="text-xl font-semibold mb-4">Folders</h2>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    {folders.map((folder) => (
+                      <LibraryFolder
+                        key={folder.folder_id}
+                        folder={folder}
+                        renameFolder={() => handleFolderAction("rename", folder.folder_id, folder.folder_name)}
+                        deleteFolder={() => deleteFolder(folder.folder_id)}
+                        openFolder={openFolder}
+                        refreshLibrary={refreshLibrary}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
 
-      {/* Documents Section (Root Folder Files) */}
-      {documents.length > 0 && (
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Files</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {documents
-              .filter((doc) => doc.folder_id === null) // Only show root folder files
-              .map((document) => (
-                <LibraryDocument
-                  key={document.document_id}
-                  document={document}
-                  handleDeleteDocument={handleDeleteDocument}
-                />
-              ))}
-          </div>
-        </div>
-      )}
+              {/* Documents Section (Root Folder Files) */}
+              {documents.length > 0 && (
+                <div>
+                  <h2 className="text-xl font-semibold mb-4">Files</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {documents
+                      .filter((doc) => doc.folder_id === null) // Only show root folder files
+                      .map((document) => (
+                        <LibraryDocument
+                          key={document.document_id}
+                          document={document}
+                          handleDeleteDocument={handleDeleteDocument}
+                        />
+                      ))}
+                  </div>
+                </div>
+              )}
 
-      {/* Empty State for No Folders and No Root Folder Files */}
-      {folders.length === 0 && documents.filter((doc) => doc.folder_id === null).length === 0 && (
-        <div className="flex justify-center items-center h-40vh"> 
-          <div className="text-center text-gray-500">
-            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <p className="mt-4 text-lg font-medium">No documents found</p>
-            <p className="mt-1 text-sm">Upload your first file or create a new folder</p>
-          </div>
-        </div>
-      )}
-    </div>
-  ) : (
-    <div className="mb-6">
-      {/* Back Button and Current Folder Name */}
-      <div className="flex items-center justify-between mb-6 px-2">
-        <button
-          onClick={goBackToMainLibrary}
-          className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          <span className="font-medium">Back to Library</span>
-        </button>
-        <div className="w-10"></div>
-      </div>
+              {/* Empty State for No Folders and No Root Folder Files */}
+              {folders.length === 0 && documents.filter((doc) => doc.folder_id === null).length === 0 && (
+                renderNoDocumentsFound()
+              )}
+            </div>
+          ) : (
+            <div className="mb-6">
+              {/* Back Button and Current Folder Name */}
+              <div className="flex items-center justify-between mb-6 px-2">
+                <button
+                  onClick={goBackToMainLibrary}
+                  className="flex items-center gap-2 text-white bg-blue-500 hover:bg-blue-600 transition-colors px-4 py-2 rounded-md"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
+                  <span className="font-medium">Back to Library</span>
+                </button>
+                <div className="w-10"></div>
+              </div>
 
-      {/* Documents in the Current Folder */}
-      {documents.filter((doc) => doc.folder_id === currentFolder).length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {documents
-            .filter((doc) => doc.folder_id === currentFolder) // Only show files in the current folder
-            .map((document) => (
-              <LibraryDocument
-                key={document.document_id}
-                document={document}
-                handleDeleteDocument={handleDeleteDocument}
-              />
-            ))}
+              {/* Documents in the Current Folder */}
+              {documents.filter((doc) => doc.folder_id === currentFolder).length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {documents
+                    .filter((doc) => doc.folder_id === currentFolder) // Only show files in the current folder
+                    .map((document) => (
+                      <LibraryDocument
+                        key={document.document_id}
+                        document={document}
+                        handleDeleteDocument={handleDeleteDocument}
+                      />
+                    ))}
+                </div>
+              ) : (
+                renderNoDocumentsFound()
+              )}
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="flex justify-center items-center h-[calc(100vh-200px)]">
-          <div className="text-center text-gray-500">
-            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <p className="mt-4 text-lg font-medium">No documents found</p>
-            <p className="mt-1 text-sm">Upload your first file or create a new folder</p>
-          </div>
-        </div>
-      )}
-    </div>
-  )}
-</div>
-
       </div>
 
       {folderAction.isOpen && (

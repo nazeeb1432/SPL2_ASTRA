@@ -194,10 +194,17 @@ async def delete_document(document_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Document not found")
 
     # Delete the associated file
-    file_path = Path(document.file_path)
-    if file_path.exists():
-        file_path.unlink()
+    try:
+        file_path = Path(document.file_path)
+        if file_path.exists():
+            file_path.unlink()  # Delete the file
+        else:
+            logger.warning(f"File not found at path: {file_path}")
+    except Exception as e:
+        logger.error(f"Error deleting file: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to delete file")
 
+    # Delete the document from the database
     db.delete(document)
     db.commit()
     return {"message": "Document deleted successfully"}
