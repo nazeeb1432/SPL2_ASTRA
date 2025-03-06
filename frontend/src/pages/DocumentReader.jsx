@@ -9,6 +9,12 @@ import BookmarkPanel from "../components/BookmarkPanel";
 import HamburgerMenu from "../components/HamburgerMenu";
 import Cookies from "js-cookie";
 import GoToLibraryButton from "../components/GoToLibraryButton";
+import { Document, Page, pdfjs } from "react-pdf";
+import "react-pdf/dist/esm/Page/AnnotationLayer.css";
+import "react-pdf/dist/esm/Page/TextLayer.css";
+
+// Configure the PDF.js worker to use the local .mjs file
+pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.mjs";
 
 const DocumentReader = () => {
     const { documentId } = useParams();
@@ -17,6 +23,9 @@ const DocumentReader = () => {
     const [selectedVoice, setSelectedVoice] = useState("");
     const [audioPath, setAudioPath] = useState("");
     const [playbackSpeed, setPlaybackSpeed] = useState(1.0); // Default speed
+    const [numPages, setNumPages] = useState(null); // Total number of pages
+    const [pageNumber, setPageNumber] = useState(1); // Current page number
+    const [isLoading, setIsLoading] = useState(true); // Loading state
 
     const { email: contextEmail } = useAuthContext();
     const email = contextEmail || Cookies.get("email");
@@ -30,8 +39,11 @@ const DocumentReader = () => {
             try {
                 const response = await api.get(`/documents/view/${documentId}`);
                 setDocument(response.data);
+                console.log("PDF URL:", response.data.file_path); // Debugging
             } catch (error) {
                 console.error("Error fetching document:", error);
+            } finally {
+                setIsLoading(false); // Stop loading
             }
         };
 
@@ -71,16 +83,8 @@ const DocumentReader = () => {
         }
     };
 
-    // useEffect to trigger the audio player reload when audioPath changes
-    useEffect(() => {
-        if (audioPath) {
-            console.log("Audio Path Updated:", audioPath);
-            // Any additional logic to reload the player can be added here
-        }
-    }, [audioPath]);
-
     const onDocumentLoadSuccess = ({ numPages }) => {
-        setNumPages(numPages); // Save the total number of pages of the PDF
+        setNumPages(numPages); // Save the total number of pages
     };
 
     const handleSummarize = async (text) => {
@@ -118,10 +122,7 @@ const DocumentReader = () => {
     };
 
     const handleNavigateToPage = (pageNumber) => {
-        const iframe = document.querySelector("iframe");
-        if (iframe) {
-            iframe.contentWindow.postMessage({ type: "navigate", page: pageNumber }, "*");
-        }
+        setPageNumber(pageNumber); // Navigate to the specified page
     };
 
     return (
@@ -140,14 +141,39 @@ const DocumentReader = () => {
                     </h1>
 
                     {/* PDF Viewer */}
-                    <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                        <div className="relative pt-[56.25%]">
-                            <iframe
-                                src={document.file_path}
-                                className="absolute top-0 left-0 w-full h-full"
-                                title="PDF Viewer"
-                            ></iframe>
-                        </div>
+                    <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm" style={{ height: "750px", overflowY: "auto" }}>
+                        <Document
+                            file={document.file_path}
+                            onLoadSuccess={onDocumentLoadSuccess}
+                            onLoadError={(error) => console.error("Error loading PDF:", error)}
+                            loading={<div className="text-center py-4">Loading PDF...</div>}
+                        >
+                            <Page
+                                pageNumber={pageNumber}
+                                width={1000} // Set a fixed width for the PDF page
+                            />
+                        </Document>
+                    </div>
+
+                    {/* Page Navigation Controls */}
+                    <div className="mt-4 flex justify-center space-x-4">
+                        <button
+                            onClick={() => setPageNumber((prev) => Math.max(prev - 1, 1))}
+                            disabled={pageNumber <= 1}
+                            className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300"
+                        >
+                            Previous
+                        </button>
+                        <span className="text-gray-700">
+                            Page {pageNumber} of {numPages}
+                        </span>
+                        <button
+                            onClick={() => setPageNumber((prev) => Math.min(prev + 1, numPages))}
+                            disabled={pageNumber >= numPages}
+                            className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300"
+                        >
+                            Next
+                        </button>
                     </div>
 
                     {/* Controls Section */}
