@@ -1,39 +1,38 @@
-// import { useState } from "react";
+// import React from "react";
+// import ReactAudioPlayer from "react-audio-player";
 
 // const PlaybackControls = ({ audioPath }) => {
-//     const [audio, setAudio] = useState(null);
-
-//     const playAudio = () => {
-//         if (!audio) {
-//             const newAudio = new Audio(audioPath);
-//             setAudio(newAudio);
-//             newAudio.play();
-//         } else {
-//             audio.play();
-//         }
-//     };
-
-//     const pauseAudio = () => {
-//         if (audio) audio.pause();
-//     };
-
 //     return (
 //         <div className="mt-4">
-//             <button onClick={playAudio}>Play</button>
-//             <button onClick={pauseAudio}>Pause</button>
+//             <ReactAudioPlayer
+//                 src={audioPath}
+//                 controls
+//                 autoPlay={false}
+//                 style={{ width: "100%" }}
+//             />
 //         </div>
 //     );
 // };
 
 // export default PlaybackControls;
 
-import React from "react";
+
+import React, { useEffect, useRef } from "react";
 import ReactAudioPlayer from "react-audio-player";
 
-const PlaybackControls = ({ audioPath }) => {
+const PlaybackControls = ({ audioPath, playbackSpeed }) => {
+    const audioPlayerRef = useRef(null);
+
+    useEffect(() => {
+        if (audioPlayerRef.current && audioPlayerRef.current.audioEl && audioPlayerRef.current.audioEl.current) {
+            audioPlayerRef.current.audioEl.current.playbackRate = playbackSpeed;
+        }
+    }, [playbackSpeed, audioPath]);
+
     return (
         <div className="mt-4">
             <ReactAudioPlayer
+                ref={audioPlayerRef}
                 src={audioPath}
                 controls
                 autoPlay={false}
