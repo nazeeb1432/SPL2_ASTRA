@@ -16,9 +16,10 @@ const DocumentReader = () => {
     const [voices, setVoices] = useState([]);
     const [selectedVoice, setSelectedVoice] = useState("");
     const [audioPath, setAudioPath] = useState("");
+    const [playbackSpeed, setPlaybackSpeed] = useState(1.0); // Default speed
 
     const { email: contextEmail } = useAuthContext();
-    const email=contextEmail || Cookies.get("email"); 
+    const email = contextEmail || Cookies.get("email");
 
     const [showSummarizationPanel, setShowSummarizationPanel] = useState(false);
     const [showNotesPanel, setShowNotesPanel] = useState(false);
@@ -39,9 +40,21 @@ const DocumentReader = () => {
             setVoices(response.data.voices);
         };
 
+        const fetchUserSettings = async () => {
+            try {
+                const response = await api.get(`/settings/${email}`);
+                const settings = response.data;
+                setSelectedVoice(settings.voice_id || ""); // Set default voice
+                setPlaybackSpeed(settings.speed || 1.0); // Set default playback speed
+            } catch (error) {
+                console.error("Error fetching user settings:", error);
+            }
+        };
+
         fetchDocument();
         fetchVoices();
-    }, [documentId]);
+        fetchUserSettings();
+    }, [documentId, email]);
 
     const generateAudiobook = async () => {
         if (!selectedVoice) return alert("Please select a voice!");
@@ -67,19 +80,18 @@ const DocumentReader = () => {
     }, [audioPath]);
 
     const onDocumentLoadSuccess = ({ numPages }) => {
-                setNumPages(numPages); // Save the total number of pages of the PDF
+        setNumPages(numPages); // Save the total number of pages of the PDF
     };
-        
+
     const handleSummarize = async (text) => {
         const response = await api.post("api/summarize", { text });
         return response.data.summary;
     };
-        
+
     const handleGenerateKeywords = async (text) => {
         const response = await api.post("api/generate-keywords", { text });
         return response.data.keywords;
     };
-
 
     const handleNavigate = (section) => {
         if (section === "audiobooks") {
@@ -117,7 +129,7 @@ const DocumentReader = () => {
             {/* Hamburger Menu */}
             <HamburgerMenu onNavigate={handleNavigate} />
             <div className="fixed top-6 left-28 z-50">
-            <GoToLibraryButton />
+                <GoToLibraryButton />
             </div>
 
             {document && (
@@ -173,7 +185,8 @@ const DocumentReader = () => {
                             {showSummarizationPanel ? "Hide Summarization" : "Show Summarization"}
                         </button>
 
-                        <PlaybackControls audioPath={audioPath} />
+                        {/* Playback Controls with speed */}
+                        <PlaybackControls audioPath={audioPath} playbackSpeed={playbackSpeed} />
                     </div>
 
                     {/* Notes Panel */}
