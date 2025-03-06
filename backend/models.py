@@ -19,6 +19,24 @@ class User(Base):
 
 
 # Document table
+# class Document(Base):
+#     __tablename__ = "documents"
+#     document_id = Column(Integer, primary_key=True, index=True)
+#     is_scanned = Column(Boolean, nullable=False, default=False)
+#     title = Column(Text, nullable=False)
+#     user_id = Column(String, ForeignKey("users.email"), nullable=False)
+#     file_path = Column(String, nullable=False)
+#     progress = Column(Integer, default=0)  # Default progress is 0
+#     folder_id = Column(Integer, ForeignKey("folders.folder_id"), nullable=True)
+#     length = Column(Integer, nullable=False)
+
+#     # Relationships
+#     user = relationship("User", back_populates="documents")
+#     folder = relationship("Folder", back_populates="documents")
+#     bookmarks = relationship("Bookmark", back_populates="document")
+#     notes = relationship("Note", back_populates="document")
+#     audiobooks = relationship("AudioBook", back_populates="document")
+
 class Document(Base):
     __tablename__ = "documents"
     document_id = Column(Integer, primary_key=True, index=True)
@@ -35,7 +53,8 @@ class Document(Base):
     folder = relationship("Folder", back_populates="documents")
     bookmarks = relationship("Bookmark", back_populates="document")
     notes = relationship("Note", back_populates="document")
-    audiobooks = relationship("AudioBook", back_populates="document")
+    audiobooks = relationship("AudioBook", back_populates="document", cascade="all, delete-orphan")  # Add this line
+
 
 
 # Folder table

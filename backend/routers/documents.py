@@ -189,14 +189,25 @@ async def move_document(document_id: int, folder_id: int, db: Session = Depends(
 @document_router.delete("/documents/delete/{document_id}")
 async def delete_document(document_id: int, db: Session = Depends(get_db)):
     """Delete a document permanently."""
+    # Log the incoming delete request
+    logger.info(f"Received request to delete document with ID: {document_id}")
+
+    # Attempt to retrieve the document from the database
     document = db.query(Document).filter(Document.document_id == document_id).first()
+
     if not document:
+        logger.warning(f"Document with ID {document_id} not found in database!")
         raise HTTPException(status_code=404, detail="Document not found")
 
-    # Delete the associated file
+    logger.info(f"Found document: {document.title}, file path: {document.file_path}")
+
+    # Log the attempt to delete the file
     try:
         file_path = Path(document.file_path)
+        logger.info(f"Attempting to delete file at: {file_path}")
+        
         if file_path.exists():
+            logger.info(f"File found at {file_path}, deleting it.")
             file_path.unlink()  # Delete the file
         else:
             logger.warning(f"File not found at path: {file_path}")
@@ -204,7 +215,13 @@ async def delete_document(document_id: int, db: Session = Depends(get_db)):
         logger.error(f"Error deleting file: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to delete file")
 
-    # Delete the document from the database
-    db.delete(document)
-    db.commit()
+    # Log the attempt to delete the document from the database
+    try:
+        db.delete(document)
+        db.commit()
+        logger.info(f"Document {document_id} deleted from database successfully.")
+    except Exception as e:
+        logger.error(f"Error deleting document from database: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to delete document from database")
+
     return {"message": "Document deleted successfully"}
