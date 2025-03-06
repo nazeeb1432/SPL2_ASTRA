@@ -15,7 +15,8 @@ const Base = () => {
       {/* Top Header Bar */}
       <header className="bg-white border-b border-gray-100 shadow-sm">
         <div className="flex justify-between items-center px-6 h-16">
-          <SettingsButton />
+         {/* <SettingsButton /> */}
+          <h1 className="text-3xl font-bold text-blue-600">ASTRA</h1>
           <LogoutButton />
         </div>
       </header>

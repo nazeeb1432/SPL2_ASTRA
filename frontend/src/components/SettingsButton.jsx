@@ -10,13 +10,13 @@ const SettingsButton = () => {
     };
 
     return (
-        <button
-            onClick={handleSettings}
-            className="text-gray-600 hover:text-gray-800 px-3 py-1 rounded-md flex items-center space-x-1"
-        >
-            <FiSettings />
-            <span>Settings</span>
-        </button>
+      <button
+      onClick={handleSettings}
+      className="w-full flex items-center gap-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors text-xl"
+      >
+      <FiSettings className="w-5 h-5 text-purple-600" />
+      <span>Settings</span>
+      </button>
     );
 };
 

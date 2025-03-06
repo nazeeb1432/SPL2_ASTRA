@@ -4,12 +4,15 @@ import AudiobookRow from "../components/AudiobookRow";
 import AudiobookPlayer from "../components/AudiobookPlayer";
 import { useAuthContext } from "../context/AuthContext";
 import Cookies from "js-cookie";
+import GoToLibraryButton from "../components/GoToLibraryButton"; // Import the button component
+
 
 const AudiobookPage = () => {
     const [audiobooks, setAudiobooks] = useState([]);
     const [selectedAudiobook, setSelectedAudiobook] = useState(null);
     const { email: contextEmail } = useAuthContext();
     const email = contextEmail || Cookies.get("email");
+    
 
     useEffect(() => {
         const fetchAudiobooks = async () => {
@@ -30,7 +33,12 @@ const AudiobookPage = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 p-6">
-            <h1 className="text-4xl font-extrabold text-purple-700 mb-8">Your Audiobooks</h1>
+            {/* Header with flex container */}
+            <div className="flex justify-between items-center mb-8">
+                <h1 className="text-4xl font-extrabold text-purple-700">Your Audiobooks</h1>
+                <GoToLibraryButton /> 
+            </div>
+            
             
             {/* Audiobook Player */}
             {selectedAudiobook && (

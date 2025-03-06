@@ -14,7 +14,7 @@ const HamburgerMenu = ({ onNavigate }) => {
             {/* Hamburger Icon */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="p-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 w-16 text-3xl"
+                className="p-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 w-16 text-2xl mt-2"
             >
                 ☰
             </button>

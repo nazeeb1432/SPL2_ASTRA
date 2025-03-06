@@ -3,6 +3,8 @@ import { AiOutlinePlus, AiOutlineAudio, AiOutlineFileAdd, AiOutlineFolderAdd } f
 import api from "../utils/api";
 import { useAuthContext } from "../context/AuthContext";
 import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+import SettingsButton from "./SettingsButton";
 
 const LibrarySidebar = ({ createFolder, refreshLibrary, onFileUpload, currentFolder }) => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -13,6 +15,7 @@ const LibrarySidebar = ({ createFolder, refreshLibrary, onFileUpload, currentFol
   const [isUploading, setIsUploading] = useState(false);
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const handleClickOutside = (event) => {
     if (
@@ -75,23 +78,29 @@ const LibrarySidebar = ({ createFolder, refreshLibrary, onFileUpload, currentFol
     setMenuOpen(false);
   };
 
+  const handleAudiobooksClick = () => {
+    navigate("/audiobooks"); // Navigate to the AudiobookPage
+  };
+
   return (
     <div className="w-64 bg-white border-r border-gray-200 p-4 flex flex-col space-y-4 relative">
       <div className="space-y-4">
         <button
           ref={buttonRef}
           className="w-full flex items-center justify-center gap-2 p-3 bg-blue-600 text-white rounded-lg
-                    hover:bg-blue-700 transition-colors font-medium text-sm"
+                    hover:bg-blue-700 transition-colors font-medium text-lg"
           onClick={() => setMenuOpen(!menuOpen)}
         >
           <AiOutlinePlus className="w-5 h-5" />
           New
         </button>
 
-        <button className="w-full flex items-center gap-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors text-sm">
+        <button className="w-full flex items-center gap-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors text-xl" 
+         onClick={handleAudiobooksClick}> 
           <AiOutlineAudio className="w-5 h-5 text-purple-600" />
           Audiobooks
         </button>
+        <SettingsButton />
       </div>
 
       {menuOpen && (
