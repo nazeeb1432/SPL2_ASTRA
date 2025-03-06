@@ -116,7 +116,7 @@ const DocumentReader = () => {
         <div className="p-6 bg-gray-50 min-h-screen">
             {/* Hamburger Menu */}
             <HamburgerMenu onNavigate={handleNavigate} />
-            <div className="ml-20">
+            <div className="fixed top-6 left-28 z-50">
             <GoToLibraryButton />
             </div>
 
