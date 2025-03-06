@@ -29,6 +29,7 @@ const AudiobookPage = () => {
 
     const handleRowClick = (audiobook) => {
         setSelectedAudiobook(audiobook);
+        window.scrollTo({ top: 0, behavior: "smooth" }); // Smooth scroll to the top
     };
 
     return (
