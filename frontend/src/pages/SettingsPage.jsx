@@ -99,7 +99,7 @@ const SettingsPage = () => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Speed */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Playback Speed</label>
+                        <label className="block text-sm font-medium text-gray-700">Preferred Playback Speed</label>
                         <select
                             name="speed"
                             value={settings.speed}
