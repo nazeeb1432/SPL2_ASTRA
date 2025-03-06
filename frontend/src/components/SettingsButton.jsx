@@ -1,3 +1,4 @@
+// SettingsButton.jsx
 import { FiSettings } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 

@@ -10,8 +10,10 @@ python-decouple
 sqlite-utils
 pymupdf
 pytesseract
+pillow
+reportlab 
+werkzeug
 TTS
 google-generativeai
 pydub
-
 

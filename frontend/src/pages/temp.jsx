@@ -30,42 +30,47 @@ const LibrarySidebar = ({ createFolder, refreshLibrary, onFileUpload, currentFol
   }, []);
 
   const handleFileUpload = async (event) => {
-  const file = event.target.files[0];
-  if (!file || !email) return;
+    const file = event.target.files[0];
+    if (!file || !email) return;
 
-  console.log(`Uploading file: ${file.name} for user: ${email} in folder: ${currentFolder || "Library"}`);
-
-  onFileUpload({ file, folderId: currentFolder });
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("user_id", email);
-  if (currentFolder) formData.append("folder_id", currentFolder);
-
-  setIsUploading(true);
-  setUploadProgress(0);
-
-  try {
-    await api.post("http://localhost:8000/documents/upload", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-      onUploadProgress: (progressEvent) => {
-        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-        setUploadProgress(percentCompleted);
-      },
+    event.target.value = null;
+    
+    // Immediately show upload in UI
+    onFileUpload({
+      file,
+      folderId: currentFolder,
+      user_id: email // Add user_id here
     });
 
-    console.log("Upload successful");
-    setIsUploading(false);
-    setUploadProgress(0);
-    refreshLibrary(); // Ensure this is called to refresh the UI
-  } catch (error) {
-    console.error("Upload Error:", error);
-    setIsUploading(false);
-    setUploadProgress(0);
-  }
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("user_id", email);
+    if (currentFolder) formData.append("folder_id", currentFolder);
 
-  setMenuOpen(false);
-};
- 
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      await api.post("/documents/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          setUploadProgress(percentCompleted);
+        },
+      });
+
+      // Refresh both folders and documents
+      await refreshLibrary();
+    } catch (error) {
+      console.error("Upload Error:", error);
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+      setMenuOpen(false);
+    }
+  };
 
   const handleCreateFolder = () => {
     const folderName = prompt("Enter folder name:");
@@ -101,7 +106,7 @@ const LibrarySidebar = ({ createFolder, refreshLibrary, onFileUpload, currentFol
         >
           <button
             className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-3"
-            onClick={() => fileInputRef.current.click()}
+            onClick={handleFileUpload}
           >
             <AiOutlineFileAdd className="w-5 h-5 text-blue-600" />
             <div>
@@ -109,7 +114,6 @@ const LibrarySidebar = ({ createFolder, refreshLibrary, onFileUpload, currentFol
               <p className="text-xs text-gray-500">PDF, DOCX, TXT</p>
             </div>
           </button>
-          <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
           <button
             className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-3"
             onClick={handleCreateFolder}
