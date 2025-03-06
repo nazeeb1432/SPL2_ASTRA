@@ -7,6 +7,7 @@ import Library from './pages/Library';
 import Base from './pages/Base';
 import DocumentReader from './pages/DocumentReader';
 import AudiobookPage from './pages/AudiobookPage';
+import SettingsPage from "./pages/SettingsPage";
 
 function App() {
   
@@ -23,6 +24,7 @@ function App() {
         <Route path="/base" element={<Base/>}/>
         <Route path="/document/:documentId" element={<DocumentReader />} />
         <Route path="/audiobooks" element={<AudiobookPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Routes>
     </Router>
     </>

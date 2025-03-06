@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List,Optional
 
 class User(BaseModel):
     name:str
@@ -54,3 +54,9 @@ class BookmarkResponse(BaseModel):
     document_id: int
     page_number: int
     description: str
+
+class SettingsUpdate(BaseModel):
+    speed: Optional[float] = None
+    page_goal: Optional[int] = None
+    duration_goal: Optional[float] = None
+    voice_id: Optional[int] = None

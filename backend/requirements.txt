@@ -15,3 +15,5 @@ reportlab
 werkzeug
 TTS
 google-generativeai
+pydub
+
