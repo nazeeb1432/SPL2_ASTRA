@@ -23,7 +23,7 @@ const LogoutButton = () => {
     <button
       onClick={handleLogout}
       className="text-red-600 bg-red-50 hover:bg-red-100 px-4 py-2.5 rounded-lg flex items-center gap-2 
-                 transition-colors text-sm font-medium"
+                 transition-colors text-xl font-medium"
     >
       <FiLogOut className="w-4 h-4" />
       <span>Logout</span>
