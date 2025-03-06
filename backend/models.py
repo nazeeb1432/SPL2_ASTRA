@@ -48,13 +48,12 @@ class Document(Base):
     folder_id = Column(Integer, ForeignKey("folders.folder_id"), nullable=True)
     length = Column(Integer, nullable=False)
 
-    # Relationships
+    # Relationships with cascade deletion
     user = relationship("User", back_populates="documents")
     folder = relationship("Folder", back_populates="documents")
-    bookmarks = relationship("Bookmark", back_populates="document")
-    notes = relationship("Note", back_populates="document")
-    audiobooks = relationship("AudioBook", back_populates="document", cascade="all, delete-orphan")  # Add this line
-
+    bookmarks = relationship("Bookmark", back_populates="document", cascade="all, delete-orphan")  # Added cascade
+    notes = relationship("Note", back_populates="document", cascade="all, delete-orphan")  # Added cascade
+    audiobooks = relationship("AudioBook", back_populates="document", cascade="all, delete-orphan")  
 
 
 # Folder table
@@ -67,7 +66,7 @@ class Folder(Base):
 
     # Relationships
     user = relationship("User", back_populates="folders")
-    documents = relationship("Document", back_populates="folder")
+    documents = relationship("Document", back_populates="folder", cascade="all, delete-orphan")
     subfolders = relationship("Folder", backref="parent_folder", remote_side=[folder_id])
 
 
