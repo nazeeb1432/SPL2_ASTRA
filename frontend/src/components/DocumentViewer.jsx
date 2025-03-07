@@ -1,8 +1,11 @@
+
+
 import { useState, useEffect, useRef } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
-import { FaChevronLeft, FaChevronRight, FaSearch, FaTimes } from "react-icons/fa";
+import { FaChevronLeft, FaChevronRight, FaSearch, FaTimes, FaSave } from "react-icons/fa";
+import api from "../utils/api"; // Import the API utility
 
 // Configure the PDF.js worker to use the local .mjs file
 pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.mjs";
@@ -13,6 +16,7 @@ const DocumentViewer = ({ document: docData, pageNumber, setPageNumber, numPages
     const [currentResultIndex, setCurrentResultIndex] = useState(0);
     const [pdfDocument, setPdfDocument] = useState(null);
     const [pageTexts, setPageTexts] = useState({});
+    const [saveStatus, setSaveStatus] = useState(null); // To show save status feedback
     const textLayerRef = useRef(null);
 
     const onDocumentLoadSuccess = async (pdfDocument) => {
@@ -191,6 +195,43 @@ const DocumentViewer = ({ document: docData, pageNumber, setPageNumber, numPages
         setPageNumber(searchResults[newIndex].pageNumber);
     };
 
+    // Save the current page as progress
+    const saveProgress = async () => {
+        if (!docData || !docData.document_id) {
+            console.error("Document data is missing or invalid");
+            setSaveStatus("error");
+            return;
+        }
+
+        try {
+            // Create FormData for the request
+            const formData = new FormData();
+            formData.append("progress", pageNumber);
+
+            // Make API call to update progress
+            const response = await api.put(
+                `/documents/update-progress/${docData.document_id}`,
+                formData
+            );
+
+            console.log("Progress saved successfully:", response.data);
+            setSaveStatus("success");
+            
+            // Clear the success message after 3 seconds
+            setTimeout(() => {
+                setSaveStatus(null);
+            }, 3000);
+        } catch (error) {
+            console.error("Error saving progress:", error);
+            setSaveStatus("error");
+            
+            // Clear the error message after 3 seconds
+            setTimeout(() => {
+                setSaveStatus(null);
+            }, 3000);
+        }
+    };
+
     // Add CSS for the text layer container
     useEffect(() => {
         // Add custom CSS to the document head for highlighting
@@ -279,6 +320,27 @@ const DocumentViewer = ({ document: docData, pageNumber, setPageNumber, numPages
                     >
                         <FaChevronRight size={18} />
                     </button>
+                    
+                    {/* Save Progress Button */}
+                    <button
+                        onClick={saveProgress}
+                        className="flex items-center space-x-1 px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none"
+                    >
+                        <FaSave size={16} />
+                        <span>Save Progress</span>
+                    </button>
+                    
+                    {/* Save Status Feedback */}
+                    {saveStatus === "success" && (
+                        <span className="text-green-600 text-sm">
+                            Progress saved!
+                        </span>
+                    )}
+                    {saveStatus === "error" && (
+                        <span className="text-red-600 text-sm">
+                            Failed to save
+                        </span>
+                    )}
                 </div>
             </div>
 
@@ -308,4 +370,3 @@ const DocumentViewer = ({ document: docData, pageNumber, setPageNumber, numPages
 };
 
 export default DocumentViewer;
-

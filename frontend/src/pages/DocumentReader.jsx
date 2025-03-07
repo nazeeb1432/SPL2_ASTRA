@@ -37,6 +37,15 @@ const DocumentReader = () => {
             try {
                 const response = await api.get(`/documents/view/${documentId}`);
                 setDocument(response.data);
+               
+                // Check if there's saved progress and set page number accordingly
+                if (response.data.progress && response.data.progress > 1) {
+                    setPageNumber(response.data.progress);
+                    console.log(`Restored reading progress to page ${response.data.progress}`);
+                } else {
+                    setPageNumber(1);
+                    console.log("Starting from page 1 (no saved progress)");
+                }
             } catch (error) {
                 console.error("Error fetching document:", error);
             } finally {
