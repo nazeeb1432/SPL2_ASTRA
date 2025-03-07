@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Body  # Add Body import
 from sqlalchemy.orm import Session
 from pathlib import Path
 import fitz  # PyMuPDF
@@ -153,7 +153,6 @@ async def view_document(document_id: int, db: Session = Depends(get_db)):
         "length": document.length
     }
 
-
 @document_router.get("/documents/{user_id}")
 async def get_user_documents(user_id: str, db: Session = Depends(get_db)):
     logger.info(f"Fetching documents for user: {user_id}")
@@ -228,37 +227,64 @@ async def delete_document(document_id: int, db: Session = Depends(get_db)):
 
     return {"message": "Document deleted successfully"}
 
+
 @document_router.put("/documents/update-progress/{document_id}")
 async def update_document_progress(
     document_id: int, 
-    progress: int = Form(...),  # The new progress value (page number)
+    progress: int = Body(...),  # Accept JSON payload
     db: Session = Depends(get_db),
 ):
     """Update the progress (page number) of a document."""
-    # Log the incoming request
-    logger.info(f"Received request to update progress for document ID: {document_id} to page: {progress}")
+    
+    logger.info(f"Received progress: {progress} for document ID: {document_id}")
+    
+    document = db.query(Document).filter(Document.document_id == document_id).first()
 
-    # Attempt to retrieve the document from the database
+    if not document:
+        logger.error(f"Document with ID {document_id} not found in the database!")
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    logger.info(f"Document length: {document.length}")
+
+    # Check for invalid progress range
+    if progress < 1 or progress > document.length:
+        logger.error(f"Invalid progress value: {progress}. Progress must be between 1 and {document.length}.")
+        raise HTTPException(
+            status_code=400,
+            detail=[{
+                "loc": ["body", "progress"],
+                "msg": f"Invalid progress value. Progress must be between 1 and {document.length}.",
+                "type": "value_error"
+            }]
+        )
+
+    # If validation passes, update progress
+    try:
+        document.progress = progress
+        db.commit()
+        logger.info(f"Successfully updated progress for document ID {document_id} to {progress}")
+    except Exception as e:
+        logger.error(f"Error committing progress update: {e}", exc_info=True)
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+    return {"message": "Document progress updated successfully"}
+
+
+
+@document_router.get("/documents/view/{document_id}")
+async def view_document(document_id: int, db: Session = Depends(get_db)):
     document = db.query(Document).filter(Document.document_id == document_id).first()
 
     if not document:
         logger.warning(f"Document with ID {document_id} not found in database!")
         raise HTTPException(status_code=404, detail="Document not found")
 
-    # Validate the progress value
-    if progress < 0 or progress > document.length:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid progress value. Progress must be between 0 and {document.length}."
-        )
-
-    # Update the progress in the database
-    try:
-        document.progress = progress
-        db.commit()
-        logger.info(f"Progress for document {document_id} updated to page {progress} successfully.")
-    except Exception as e:
-        logger.error(f"Error updating progress for document {document_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to update document progress")
-
-    return {"message": "Document progress updated successfully"}
+    # Return progress and document length
+    return {
+        "document_id": document.document_id,
+        "title": document.title,
+        "file_path": f"http://127.0.0.1:8000/uploads/{Path(document.file_path).name}",
+        "progress": document.progress,
+        "length": document.length
+    }

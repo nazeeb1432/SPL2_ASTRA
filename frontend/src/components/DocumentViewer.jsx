@@ -3,7 +3,7 @@ import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import { FaChevronLeft, FaChevronRight, FaSearch, FaTimes, FaSave } from "react-icons/fa";
-import api from "../utils/api"; // Import the API utility
+import api from "../utils/api";
 
 // Configure the PDF.js worker to use the local .mjs file
 pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.mjs";
@@ -17,8 +17,46 @@ const DocumentViewer = ({ document: docData, pageNumber, setPageNumber, numPages
     const [saveStatus, setSaveStatus] = useState(null); // To show save status feedback
     const textLayerRef = useRef(null);
 
+    // Function to update progress
+    const updateProgress = async (pageNumber) => {
+        console.log(`Sending request to update progress for document ID: ${document.document_id} with page number: ${pageNumber}`);
+    
+        // Ensure progress is an integer before sending
+        const requestPayload = {
+            progress: parseInt(pageNumber, 10)  // Force conversion to integer
+        };
+        console.log("Request payload:", requestPayload); // Log the payload before sending
+    
+        try {
+            await api.put(`/documents/update-progress/${document.document_id}`, requestPayload);
+            console.log("Progress saved!");
+        } catch (error) {
+            console.error("Error saving progress:", error.response?.data || error.message);
+            // Log the full error response for more details
+            if (error.response) {
+                console.log("Full error response data:", error.response.data);  // Log entire error response
+                console.log("Error response status:", error.response.status);
+            }
+        }
+    };
+    
+
+    useEffect(() => {
+        // On initial load, check if progress is 0, and set to 1
+        if (document.progress === 0) {
+            console.log("Initial document progress is 0, setting it to 1");
+            updateProgress(1); // Set initial page as 1
+        }
+    }, [document]);
+
+    const handlePageChange = (newPage) => {
+        if (newPage > 0 && newPage <= numPages) {
+            setPageNumber(newPage);
+            // Removed the automatic progress update here
+        }
+    };
+
     const onDocumentLoadSuccess = async (pdfDocument) => {
-        console.log("PDF loaded successfully. Number of pages:", pdfDocument.numPages);
         setNumPages(pdfDocument.numPages);
         setPdfDocument(pdfDocument);
 
@@ -29,7 +67,6 @@ const DocumentViewer = ({ document: docData, pageNumber, setPageNumber, numPages
             const textContent = await page.getTextContent();
             const pageText = textContent.items.map((item) => item.str).join(" ");
             texts[i] = pageText;
-            console.log(`Text content for page ${i}:`, pageText); // Debug log
         }
         setPageTexts(texts);
     };
@@ -302,7 +339,7 @@ const DocumentViewer = ({ document: docData, pageNumber, setPageNumber, numPages
                 {/* Page Navigation Controls (Right Side) */}
                 <div className="flex items-center space-x-4">
                     <button
-                        onClick={() => setPageNumber((prev) => Math.max(prev - 1, 1))}
+                        onClick={() => handlePageChange(pageNumber - 1)}
                         disabled={pageNumber <= 1}
                         className="p-2 text-gray-600 hover:text-gray-800 disabled:text-gray-300 focus:outline-none"
                     >
@@ -312,7 +349,7 @@ const DocumentViewer = ({ document: docData, pageNumber, setPageNumber, numPages
                         Page {pageNumber} of {numPages}
                     </span>
                     <button
-                        onClick={() => setPageNumber((prev) => Math.min(prev + 1, numPages))}
+                        onClick={() => handlePageChange(pageNumber + 1)}
                         disabled={pageNumber >= numPages}
                         className="p-2 text-gray-600 hover:text-gray-800 disabled:text-gray-300 focus:outline-none"
                     >
