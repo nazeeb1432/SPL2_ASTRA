@@ -90,6 +90,11 @@ const DocumentReader = () => {
         return response.data.keywords;
     };
 
+    const handleWordMeaning = async (text) => {
+        const response = await api.post("api/word-meaning", { text });
+        return response.data.meaning;
+    };
+
     const handleNavigate = (section) => {
         if (section === "audiobooks") {
             window.location.href = "/audiobooks";
@@ -193,6 +198,7 @@ const DocumentReader = () => {
                         <SummarizationPanel
                             onSummarize={handleSummarize}
                             onGenerateKeywords={handleGenerateKeywords}
+                            onWordMeaning={handleWordMeaning}
                         />
                     )}
                 </div>
