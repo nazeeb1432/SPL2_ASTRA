@@ -5,11 +5,14 @@ import PlaybackControls from "../components/PlaybackControls";
 import { useAuthContext } from "../context/AuthContext";
 import SummarizationPanel from "../components/SummarizationPanel";
 import NotesPanel from "../components/NotesPanel";
+import Notes from "../components/Notes";
 import BookmarkPanel from "../components/BookmarkPanel";
 import HamburgerMenu from "../components/HamburgerMenu";
 import Cookies from "js-cookie";
 import GoToLibraryButton from "../components/GoToLibraryButton";
 import DocumentViewer from "../components/DocumentViewer";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const DocumentReader = () => {
     const { documentId } = useParams();
@@ -27,7 +30,9 @@ const DocumentReader = () => {
 
     const [showSummarizationPanel, setShowSummarizationPanel] = useState(false);
     const [showNotesPanel, setShowNotesPanel] = useState(false);
+    const [showViewNotesPanel, setShowViewNotesPanel] = useState(false);
     const [showBookmarkPanel, setShowBookmarkPanel] = useState(false);
+    const [noteToEdit, setNoteToEdit] = useState(null);
 
     // Shift the main content to the left when the summarization panel is open
     const mainContentClass = showSummarizationPanel ? "mr-96" : "";
@@ -108,24 +113,64 @@ const DocumentReader = () => {
         if (section === "audiobooks") {
             window.location.href = "/audiobooks";
         } else if (section === "notes") {
-            setShowNotesPanel(true);
+            // First close any other panels
             setShowBookmarkPanel(false);
             setShowSummarizationPanel(false);
-            window.scrollBy({ top: 1000, behavior: "smooth" });
-        } else if (section === "bookmarks") {
-            setShowBookmarkPanel(true);
+            setShowViewNotesPanel(false);
+            // Reset noteToEdit when creating a new note
+            setNoteToEdit(null);
+            // Open notes creation panel
+            setShowNotesPanel(true);
+            window.scrollBy({ top: 100, behavior: "smooth" });
+        } else if (section === "view-notes") {
+            // First close any other panels
             setShowNotesPanel(false);
+            setShowBookmarkPanel(false);
             setShowSummarizationPanel(false);
-            window.scrollBy({ top: 1200, behavior: "smooth" });
-        } else if (section === "audiobook") {
-            window.scrollBy({ top: 800, behavior: "smooth" });
-        } else if (section === "summarization") {
-            window.scrollBy({ top: 800, behavior: "smooth" });
-        }
+            // Open notes viewing panel
+            setShowViewNotesPanel(true);
+            window.scrollBy({ top: 100, behavior: "smooth" });
+        } else if (section === "bookmarks") {
+            // Close all other panels
+            setShowNotesPanel(false);
+            setShowViewNotesPanel(false);
+            setShowSummarizationPanel(false);
+            // Open bookmarks panel
+            setShowBookmarkPanel(true);
+            window.scrollBy({ top: 100, behavior: "smooth" });
+        } 
+    };
+
+    const handleEditNote = (note) => {
+        // Set the noteToEdit with the correct structure that matches what
+        // we expect in NotesPanel
+        setNoteToEdit(note);
+        setShowViewNotesPanel(false);
+        setShowNotesPanel(true);
+    };
+
+    const handleCloseNotes = () => {
+        setShowNotesPanel(false);
+        setNoteToEdit(null);
+    };
+
+    const handleCloseViewNotes = () => {
+        setShowViewNotesPanel(false);
     };
 
     const handleNavigateToPage = (pageNumber) => {
         setPageNumber(pageNumber);
+    };
+
+    const handleNoteSaved = () => {
+        // When a note is saved, refresh the notes view
+        setShowNotesPanel(false);
+        setNoteToEdit(null);
+        
+        // If coming from notes view, go back to it
+        if (showViewNotesPanel || noteToEdit) {
+            setShowViewNotesPanel(true);
+        }
     };
 
     return (
@@ -154,6 +199,22 @@ const DocumentReader = () => {
 
                     {/* Controls Section */}
                     <div className="mt-6 space-y-4">
+                        <div className="flex flex-wrap gap-2">
+                            {/* Notes management buttons */}
+                            <button
+                                onClick={() => handleNavigate("notes")}
+                                className="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                            >
+                                Take Notes
+                            </button>
+                            <button
+                                onClick={() => handleNavigate("view-notes")}
+                                className="flex-1 bg-teal-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-teal-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+                            >
+                                View Notes
+                            </button>
+                        </div>
+
                         {/* Voice Selection Dropdown */}
                         <div className="flex flex-col space-y-2 md:flex-row md:items-center md:space-x-4">
                             <label className="text-gray-700 font-medium">Select a Voice:</label>
@@ -181,7 +242,12 @@ const DocumentReader = () => {
 
                         {/* Summarization Button */}
                         <button
-                            onClick={() => setShowSummarizationPanel(!showSummarizationPanel)}
+                            onClick={() => {
+                                setShowNotesPanel(false);
+                                setShowViewNotesPanel(false);
+                                setShowBookmarkPanel(false);
+                                setShowSummarizationPanel(!showSummarizationPanel);
+                            }}
                             className="w-full bg-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-purple-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
                         >
                             {showSummarizationPanel ? "Hide Summarization" : "Show Summarization"}
@@ -192,14 +258,36 @@ const DocumentReader = () => {
                     </div>
 
                     {/* Notes Panel */}
-                    {showNotesPanel && <NotesPanel documentId={documentId} />}
+                    {showNotesPanel && (
+                        <div className="mt-6">
+                            <NotesPanel 
+                                documentId={documentId} 
+                                onClose={handleCloseNotes} 
+                                noteToEdit={noteToEdit} 
+                                onSave={handleNoteSaved}
+                            />
+                        </div>
+                    )}
+
+                    {/* View Notes Panel */}
+                    {showViewNotesPanel && (
+                        <div className="mt-6">
+                            <Notes 
+                                documentId={documentId} 
+                                onEdit={handleEditNote}
+                                onClose={handleCloseViewNotes}
+                            />
+                        </div>
+                    )}
 
                     {/* Bookmark Panel */}
                     {showBookmarkPanel && (
-                        <BookmarkPanel
-                            documentId={documentId}
-                            onNavigate={handleNavigateToPage}
-                        />
+                        <div className="mt-6">
+                            <BookmarkPanel
+                                documentId={documentId}
+                                onNavigate={handleNavigateToPage}
+                            />
+                        </div>
                     )}
 
                     {/* Summarization Panel */}
@@ -212,6 +300,9 @@ const DocumentReader = () => {
                     )}
                 </div>
             )}
+            
+            {/* Toast Container for notifications */}
+            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
         </div>
     );
 };

@@ -3,6 +3,7 @@
     "js-cookie": "^3.0.5",
     "react-audio-player": "^0.17.0",
     "react-pdf": "^9.2.1",
-    "react-pdf-highlighter": "^8.0.0-rc.0"
+    "react-pdf-highlighter": "^8.0.0-rc.0",
+    "react-toastify": "^11.0.5"
   }
 }

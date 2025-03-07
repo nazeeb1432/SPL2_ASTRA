@@ -1,6 +1,5 @@
 import { useState } from "react";
 
-
 const HamburgerMenu = ({ onNavigate }) => {
     const [isOpen, setIsOpen] = useState(false);
 
@@ -21,34 +20,28 @@ const HamburgerMenu = ({ onNavigate }) => {
 
             {/* Menu Items */}
             {isOpen && (
-                <div className="mt-2 bg-white shadow-lg rounded-lg p-4 space-y-2 w-48">
+                <div className="mt-2 bg-white shadow-lg rounded-lg p-4 space-y-2 w-48 border border-gray-200">
                     <button
                         onClick={() => handleMenuItemClick("notes")}
-                        className="block w-full text-left font-semibold hover:bg-blue-700 hover:text-white hover:font-bold p-2 rounded-lg"
+                        className="block w-full text-left font-semibold hover:bg-blue-700 hover:text-white hover:font-bold p-2 rounded-lg transition-colors duration-200"
                     >
                         Take Notes
                     </button>
                     <button
+                        onClick={() => handleMenuItemClick("view-notes")}
+                        className="block w-full text-left font-semibold hover:bg-blue-700 hover:text-white hover:font-bold p-2 rounded-lg transition-colors duration-200"
+                    >
+                        View Notes
+                    </button>
+                    <button
                         onClick={() => handleMenuItemClick("bookmarks")}
-                        className="block w-full text-left font-semibold hover:bg-blue-700 hover:text-white hover:font-bold p-2 rounded-lg"
+                        className="block w-full text-left font-semibold hover:bg-blue-700 hover:text-white hover:font-bold p-2 rounded-lg transition-colors duration-200"
                     >
-                        Bookmarks
-                    </button>
-                    <button
-                        onClick={() => handleMenuItemClick("audiobook")}
-                        className="block w-full text-left font-semibold hover:bg-blue-700 hover:text-white hover:font-bold p-2 rounded-lg"
-                    >
-                        Generate Audiobook
-                    </button>
-                    <button
-                        onClick={() => handleMenuItemClick("summarization")}
-                        className="block w-full text-left font-semibold hover:bg-blue-700 hover:text-white hover:font-bold p-2 rounded-lg"
-                    >
-                        Generate Summarization
+                        Add Bookmark
                     </button>
                     <button
                         onClick={() => handleMenuItemClick("audiobooks")}
-                        className="block w-full text-left font-semibold hover:bg-blue-700 hover:text-white hover:font-bold p-2 rounded-lg"
+                        className="block w-full text-left font-semibold hover:bg-blue-700 hover:text-white hover:font-bold p-2 rounded-lg transition-colors duration-200"
                     >
                         My Audiobooks
                     </button>
