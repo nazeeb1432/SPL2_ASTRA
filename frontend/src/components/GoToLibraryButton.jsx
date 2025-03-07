@@ -13,7 +13,7 @@ const GoToLibraryButton = () => {
             onClick={handleClick}
             className="bg-purple-700 text-white px-5 py-3 rounded-lg hover:bg-purple-800 transition duration-300 ease-in-out shadow-md text-md font-semibold"
         >
-            Go to Library
+            My Library
         </button>
     );
 };

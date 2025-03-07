@@ -225,3 +225,38 @@ async def delete_document(document_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail="Failed to delete document from database")
 
     return {"message": "Document deleted successfully"}
+
+@document_router.put("/documents/update-progress/{document_id}")
+async def update_document_progress(
+    document_id: int, 
+    progress: int = Form(...),  # The new progress value (page number)
+    db: Session = Depends(get_db),
+):
+    """Update the progress (page number) of a document."""
+    # Log the incoming request
+    logger.info(f"Received request to update progress for document ID: {document_id} to page: {progress}")
+
+    # Attempt to retrieve the document from the database
+    document = db.query(Document).filter(Document.document_id == document_id).first()
+
+    if not document:
+        logger.warning(f"Document with ID {document_id} not found in database!")
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    # Validate the progress value
+    if progress < 0 or progress > document.length:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid progress value. Progress must be between 0 and {document.length}."
+        )
+
+    # Update the progress in the database
+    try:
+        document.progress = progress
+        db.commit()
+        logger.info(f"Progress for document {document_id} updated to page {progress} successfully.")
+    except Exception as e:
+        logger.error(f"Error updating progress for document {document_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to update document progress")
+
+    return {"message": "Document progress updated successfully"}

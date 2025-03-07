@@ -9,12 +9,7 @@ import BookmarkPanel from "../components/BookmarkPanel";
 import HamburgerMenu from "../components/HamburgerMenu";
 import Cookies from "js-cookie";
 import GoToLibraryButton from "../components/GoToLibraryButton";
-import { Document, Page, pdfjs } from "react-pdf";
-import "react-pdf/dist/esm/Page/AnnotationLayer.css";
-import "react-pdf/dist/esm/Page/TextLayer.css";
-
-// Configure the PDF.js worker to use the local .mjs file
-pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.mjs";
+import DocumentViewer from "../components/DocumentViewer";
 
 const DocumentReader = () => {
     const { documentId } = useParams();
@@ -22,10 +17,10 @@ const DocumentReader = () => {
     const [voices, setVoices] = useState([]);
     const [selectedVoice, setSelectedVoice] = useState("");
     const [audioPath, setAudioPath] = useState("");
-    const [playbackSpeed, setPlaybackSpeed] = useState(1.0); // Default speed
-    const [numPages, setNumPages] = useState(null); // Total number of pages
-    const [pageNumber, setPageNumber] = useState(1); // Current page number
-    const [isLoading, setIsLoading] = useState(true); // Loading state
+    const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
+    const [numPages, setNumPages] = useState(null);
+    const [pageNumber, setPageNumber] = useState(1);
+    const [isLoading, setIsLoading] = useState(true);
 
     const { email: contextEmail } = useAuthContext();
     const email = contextEmail || Cookies.get("email");
@@ -34,16 +29,18 @@ const DocumentReader = () => {
     const [showNotesPanel, setShowNotesPanel] = useState(false);
     const [showBookmarkPanel, setShowBookmarkPanel] = useState(false);
 
+    // Shift the main content to the left when the summarization panel is open
+    const mainContentClass = showSummarizationPanel ? "mr-96" : "";
+
     useEffect(() => {
         const fetchDocument = async () => {
             try {
                 const response = await api.get(`/documents/view/${documentId}`);
                 setDocument(response.data);
-                console.log("PDF URL:", response.data.file_path); // Debugging
             } catch (error) {
                 console.error("Error fetching document:", error);
             } finally {
-                setIsLoading(false); // Stop loading
+                setIsLoading(false);
             }
         };
 
@@ -56,8 +53,8 @@ const DocumentReader = () => {
             try {
                 const response = await api.get(`/settings/${email}`);
                 const settings = response.data;
-                setSelectedVoice(settings.voice_id || ""); // Set default voice
-                setPlaybackSpeed(settings.speed || 1.0); // Set default playback speed
+                setSelectedVoice(settings.voice_id || "");
+                setPlaybackSpeed(settings.speed || 1.0);
             } catch (error) {
                 console.error("Error fetching user settings:", error);
             }
@@ -83,10 +80,6 @@ const DocumentReader = () => {
         }
     };
 
-    const onDocumentLoadSuccess = ({ numPages }) => {
-        setNumPages(numPages); // Save the total number of pages
-    };
-
     const handleSummarize = async (text) => {
         const response = await api.post("api/summarize", { text });
         return response.data.summary;
@@ -99,30 +92,26 @@ const DocumentReader = () => {
 
     const handleNavigate = (section) => {
         if (section === "audiobooks") {
-            window.location.href = "/audiobooks"; // Navigate to the Audiobook Page
+            window.location.href = "/audiobooks";
         } else if (section === "notes") {
             setShowNotesPanel(true);
             setShowBookmarkPanel(false);
             setShowSummarizationPanel(false);
-            // Scroll down by 800 pixels to show the NotesPanel
             window.scrollBy({ top: 1000, behavior: "smooth" });
         } else if (section === "bookmarks") {
             setShowBookmarkPanel(true);
             setShowNotesPanel(false);
             setShowSummarizationPanel(false);
-            // Scroll down by 800 pixels to show the BookmarkPanel
             window.scrollBy({ top: 1200, behavior: "smooth" });
         } else if (section === "audiobook") {
-            // Scroll down by 1000 pixels to show the Generate Audiobook button
             window.scrollBy({ top: 800, behavior: "smooth" });
         } else if (section === "summarization") {
-            // Scroll down by 1200 pixels to show the Summarization button
             window.scrollBy({ top: 800, behavior: "smooth" });
         }
     };
 
     const handleNavigateToPage = (pageNumber) => {
-        setPageNumber(pageNumber); // Navigate to the specified page
+        setPageNumber(pageNumber);
     };
 
     return (
@@ -134,47 +123,20 @@ const DocumentReader = () => {
             </div>
 
             {document && (
-                <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-lg p-6">
+                <div className={`max-w-6xl mx-auto bg-white shadow-lg rounded-lg p-6 transition-all duration-300 ${mainContentClass}`}>
                     {/* Document Title */}
                     <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">
                         {document.title}
                     </h1>
 
-                    {/* PDF Viewer */}
-                    <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm" style={{ height: "750px", overflowY: "auto" }}>
-                        <Document
-                            file={document.file_path}
-                            onLoadSuccess={onDocumentLoadSuccess}
-                            onLoadError={(error) => console.error("Error loading PDF:", error)}
-                            loading={<div className="text-center py-4">Loading PDF...</div>}
-                        >
-                            <Page
-                                pageNumber={pageNumber}
-                                width={1000} // Set a fixed width for the PDF page
-                            />
-                        </Document>
-                    </div>
-
-                    {/* Page Navigation Controls */}
-                    <div className="mt-4 flex justify-center space-x-4">
-                        <button
-                            onClick={() => setPageNumber((prev) => Math.max(prev - 1, 1))}
-                            disabled={pageNumber <= 1}
-                            className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300"
-                        >
-                            Previous
-                        </button>
-                        <span className="text-gray-700">
-                            Page {pageNumber} of {numPages}
-                        </span>
-                        <button
-                            onClick={() => setPageNumber((prev) => Math.min(prev + 1, numPages))}
-                            disabled={pageNumber >= numPages}
-                            className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300"
-                        >
-                            Next
-                        </button>
-                    </div>
+                    {/* Document Viewer */}
+                    <DocumentViewer
+                        document={document}
+                        pageNumber={pageNumber}
+                        setPageNumber={setPageNumber}
+                        numPages={numPages}
+                        setNumPages={setNumPages}
+                    />
 
                     {/* Controls Section */}
                     <div className="mt-6 space-y-4">
