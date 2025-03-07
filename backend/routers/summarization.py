@@ -45,3 +45,11 @@ async def generate_keywords(request: schemas.TextRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/word-meaning")
+async def word_meaning(request: schemas.TextRequest):
+    try:
+        response = model.generate_content(f"Provide the meaning of the word/words: {request.text}")
+        print(response.text)  # print the response
+        return {"meaning": response.text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
