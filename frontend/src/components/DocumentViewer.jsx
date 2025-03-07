@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
@@ -7,32 +7,126 @@ import { FaChevronLeft, FaChevronRight, FaSearch, FaTimes } from "react-icons/fa
 // Configure the PDF.js worker to use the local .mjs file
 pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.mjs";
 
-const DocumentViewer = ({ document, pageNumber, setPageNumber, numPages, setNumPages }) => {
+const DocumentViewer = ({ document: docData, pageNumber, setPageNumber, numPages, setNumPages }) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [searchResults, setSearchResults] = useState([]);
     const [currentResultIndex, setCurrentResultIndex] = useState(0);
-    const [pdfDocument, setPdfDocument] = useState(null); // Use pdfDocument instead of pdfInstance
-    const [pageTexts, setPageTexts] = useState({}); // Store text content per page
+    const [pdfDocument, setPdfDocument] = useState(null);
+    const [pageTexts, setPageTexts] = useState({});
+    const textLayerRef = useRef(null);
 
     const onDocumentLoadSuccess = async (pdfDocument) => {
         console.log("PDF loaded successfully. Number of pages:", pdfDocument.numPages);
         setNumPages(pdfDocument.numPages);
-        setPdfDocument(pdfDocument); // Set the pdfDocument state
+        setPdfDocument(pdfDocument);
 
         // Retrieve text content for each page
         const texts = {};
         for (let i = 1; i <= pdfDocument.numPages; i++) {
             const page = await pdfDocument.getPage(i);
             const textContent = await page.getTextContent();
-            const pageText = textContent.items.map((item) => item.str).join(" "); // Store all text as one string
+            const pageText = textContent.items.map((item) => item.str).join(" ");
             texts[i] = pageText;
             console.log(`Text content for page ${i}:`, pageText); // Debug log
         }
         setPageTexts(texts);
     };
 
+    // Apply highlighting to the text layer after rendering
+    useEffect(() => {
+        if (searchTerm && searchResults.length > 0) {
+            setTimeout(() => {
+                highlightTextLayer();
+            }, 100); // Short delay to ensure text layer is rendered
+        }
+    }, [pageNumber, searchResults, currentResultIndex, searchTerm]);
+
+    const highlightTextLayer = () => {
+        if (!textLayerRef.current) return;
+        
+        // Get the text layer element
+        const textLayerElement = textLayerRef.current.querySelector(".react-pdf__Page__textContent");
+        if (!textLayerElement) return;
+
+        // Remove any previous highlights
+        const existingHighlights = textLayerElement.querySelectorAll(".search-highlight");
+        existingHighlights.forEach((highlight) => {
+            const parent = highlight.parentNode;
+            parent.replaceChild(document.createTextNode(highlight.textContent), highlight);
+            parent.normalize(); // Normalize to merge adjacent text nodes
+        });
+
+        if (!searchTerm) return;
+
+        // Get the current page's search result
+        const currentPageResult = searchResults.find(r => r.pageNumber === pageNumber);
+        if (!currentPageResult) return;
+
+        // Apply highlighting by wrapping the text with highlight span elements
+        const textNodes = getTextNodesIn(textLayerElement);
+        
+        const searchTermLower = searchTerm.toLowerCase();
+        textNodes.forEach((node) => {
+            const nodeText = node.textContent;
+            const nodeTextLower = nodeText.toLowerCase();
+            
+            let lastIndex = 0;
+            let index = nodeTextLower.indexOf(searchTermLower, lastIndex);
+            
+            if (index === -1) return;
+            
+            // Create a document fragment to hold the new content
+            const fragment = document.createDocumentFragment();
+            
+            while (index !== -1) {
+                // Add text before the match
+                fragment.appendChild(document.createTextNode(nodeText.substring(lastIndex, index)));
+                
+                // Add the highlighted match
+                const highlightSpan = document.createElement("span");
+                highlightSpan.className = "search-highlight";
+                highlightSpan.style.backgroundColor = "yellow";
+                highlightSpan.style.color = "black";
+                highlightSpan.textContent = nodeText.substring(index, index + searchTerm.length);
+                fragment.appendChild(highlightSpan);
+                
+                // Update lastIndex to after the match
+                lastIndex = index + searchTerm.length;
+                
+                // Find the next match
+                index = nodeTextLower.indexOf(searchTermLower, lastIndex);
+            }
+            
+            // Add any remaining text
+            if (lastIndex < nodeText.length) {
+                fragment.appendChild(document.createTextNode(nodeText.substring(lastIndex)));
+            }
+            
+            // Replace the original node with the fragment
+            node.parentNode.replaceChild(fragment, node);
+        });
+    };
+
+    // Helper function to get all text nodes within an element
+    const getTextNodesIn = (element) => {
+        const textNodes = [];
+        const walker = document.createTreeWalker(
+            element,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false
+        );
+        
+        let node;
+        while (node = walker.nextNode()) {
+            textNodes.push(node);
+        }
+        
+        return textNodes;
+    };
+
     const handleSearch = () => {
-        console.log("Search term:", searchTerm); // Debug log
+        console.log("Search term:", searchTerm);
         if (!searchTerm || !pdfDocument) {
             console.log("Search term is empty or PDF document is not available.");
             return;
@@ -40,7 +134,7 @@ const DocumentViewer = ({ document, pageNumber, setPageNumber, numPages, setNumP
 
         const results = [];
         Object.entries(pageTexts).forEach(([pageNum, text]) => {
-            console.log(`Searching in page ${pageNum}...`); // Debug log
+            console.log(`Searching in page ${pageNum}...`);
             const matches = [];
             let index = text.toLowerCase().indexOf(searchTerm.toLowerCase());
             while (index !== -1) {
@@ -48,39 +142,74 @@ const DocumentViewer = ({ document, pageNumber, setPageNumber, numPages, setNumP
                 index = text.toLowerCase().indexOf(searchTerm.toLowerCase(), index + 1);
             }
             if (matches.length > 0) {
-                console.log(`Found ${matches.length} matches in page ${pageNum}:`, matches); // Debug log
+                console.log(`Found ${matches.length} matches in page ${pageNum}:`, matches);
                 results.push({ pageNumber: parseInt(pageNum), matches });
             }
         });
 
-        console.log("Search results:", results); // Debug log
+        console.log("Search results:", results);
         setSearchResults(results);
         setCurrentResultIndex(0);
         if (results.length > 0) {
             setPageNumber(results[0].pageNumber);
         } else {
-            console.log("No matches found for the search term."); // Debug log
+            console.log("No matches found for the search term.");
         }
     };
 
     const clearSearch = () => {
-        console.log("Clearing search..."); // Debug log
+        console.log("Clearing search...");
         setSearchTerm("");
         setSearchResults([]);
         setCurrentResultIndex(0);
+        
+        // Remove any existing highlights
+        if (textLayerRef.current) {
+            const textLayerElement = textLayerRef.current.querySelector(".react-pdf__Page__textContent");
+            if (textLayerElement) {
+                const existingHighlights = textLayerElement.querySelectorAll(".search-highlight");
+                existingHighlights.forEach((highlight) => {
+                    const parent = highlight.parentNode;
+                    parent.replaceChild(document.createTextNode(highlight.textContent), highlight);
+                    parent.normalize();
+                });
+            }
+        }
     };
 
     const navigateSearchResult = (direction) => {
+        if (searchResults.length === 0) return;
+        
         let newIndex;
         if (direction === "next") {
             newIndex = (currentResultIndex + 1) % searchResults.length;
         } else {
             newIndex = (currentResultIndex - 1 + searchResults.length) % searchResults.length;
         }
-        console.log(`Navigating to result index ${newIndex}...`); // Debug log
+        console.log(`Navigating to result index ${newIndex}...`);
         setCurrentResultIndex(newIndex);
         setPageNumber(searchResults[newIndex].pageNumber);
     };
+
+    // Add CSS for the text layer container
+    useEffect(() => {
+        // Add custom CSS to the document head for highlighting
+        const style = document.createElement('style');
+        style.textContent = `
+            .search-highlight {
+                background-color: yellow !important;
+                color: black !important;
+                border-radius: 3px;
+                padding: 0 1px;
+                margin: 0 1px;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        return () => {
+            document.head.removeChild(style);
+        };
+    }, []);
 
     return (
         <div>
@@ -94,6 +223,9 @@ const DocumentViewer = ({ document, pageNumber, setPageNumber, numPages, setNumP
                         onChange={(e) => setSearchTerm(e.target.value)}
                         placeholder="Search..."
                         className="p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSearch();
+                        }}
                     />
                     <button
                         onClick={handleSearch}
@@ -151,16 +283,23 @@ const DocumentViewer = ({ document, pageNumber, setPageNumber, numPages, setNumP
             </div>
 
             {/* PDF Viewer */}
-            <div className="border border-gray-200 rounded-b-lg overflow-hidden shadow-sm" style={{ height: "750px", overflowY: "auto" }}>
+            <div 
+                className="border border-gray-200 rounded-b-lg overflow-hidden shadow-sm" 
+                style={{ height: "750px", overflowY: "auto" }}
+                ref={textLayerRef}
+            >
                 <Document
-                    file={document.file_path}
+                    file={docData?.file_path}
                     onLoadSuccess={onDocumentLoadSuccess}
                     onLoadError={(error) => console.error("Error loading PDF:", error)}
                     loading={<div className="text-center py-4">Loading PDF...</div>}
                 >
                     <Page
                         pageNumber={pageNumber}
-                        width={1000} // Set a fixed width for the PDF page
+                        width={1000}
+                        renderTextLayer={true}
+                        renderAnnotationLayer={true}
+                        onRenderSuccess={highlightTextLayer}
                     />
                 </Document>
             </div>
@@ -169,3 +308,4 @@ const DocumentViewer = ({ document, pageNumber, setPageNumber, numPages, setNumP
 };
 
 export default DocumentViewer;
+
