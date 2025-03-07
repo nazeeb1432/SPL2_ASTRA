@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
-import { FaChevronLeft, FaChevronRight, FaSearch, FaTimes } from "react-icons/fa";
+import { FaChevronLeft, FaChevronRight, FaSearch, FaTimes, FaSave } from "react-icons/fa";
+import api from "../utils/api";
 
 // Configure the PDF.js worker to use the local .mjs file
 pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.mjs";
@@ -14,8 +15,46 @@ const DocumentViewer = ({ document, pageNumber, setPageNumber, numPages, setNumP
     const [pdfDocument, setPdfDocument] = useState(null); // Use pdfDocument instead of pdfInstance
     const [pageTexts, setPageTexts] = useState({}); // Store text content per page
 
+    // Function to update progress
+    const updateProgress = async (pageNumber) => {
+        console.log(`Sending request to update progress for document ID: ${document.document_id} with page number: ${pageNumber}`);
+    
+        // Ensure progress is an integer before sending
+        const requestPayload = {
+            progress: parseInt(pageNumber, 10)  // Force conversion to integer
+        };
+        console.log("Request payload:", requestPayload); // Log the payload before sending
+    
+        try {
+            await api.put(`/documents/update-progress/${document.document_id}`, requestPayload);
+            console.log("Progress saved!");
+        } catch (error) {
+            console.error("Error saving progress:", error.response?.data || error.message);
+            // Log the full error response for more details
+            if (error.response) {
+                console.log("Full error response data:", error.response.data);  // Log entire error response
+                console.log("Error response status:", error.response.status);
+            }
+        }
+    };
+    
+
+    useEffect(() => {
+        // On initial load, check if progress is 0, and set to 1
+        if (document.progress === 0) {
+            console.log("Initial document progress is 0, setting it to 1");
+            updateProgress(1); // Set initial page as 1
+        }
+    }, [document]);
+
+    const handlePageChange = (newPage) => {
+        if (newPage > 0 && newPage <= numPages) {
+            setPageNumber(newPage);
+            // Removed the automatic progress update here
+        }
+    };
+
     const onDocumentLoadSuccess = async (pdfDocument) => {
-        console.log("PDF loaded successfully. Number of pages:", pdfDocument.numPages);
         setNumPages(pdfDocument.numPages);
         setPdfDocument(pdfDocument); // Set the pdfDocument state
 
@@ -26,7 +65,6 @@ const DocumentViewer = ({ document, pageNumber, setPageNumber, numPages, setNumP
             const textContent = await page.getTextContent();
             const pageText = textContent.items.map((item) => item.str).join(" "); // Store all text as one string
             texts[i] = pageText;
-            console.log(`Text content for page ${i}:`, pageText); // Debug log
         }
         setPageTexts(texts);
     };
@@ -82,6 +120,10 @@ const DocumentViewer = ({ document, pageNumber, setPageNumber, numPages, setNumP
         setPageNumber(searchResults[newIndex].pageNumber);
     };
 
+    const handleSaveProgress = () => {
+        updateProgress(pageNumber);
+    };
+
     return (
         <div>
             {/* Thin Ribbon-like Top Bar */}
@@ -131,7 +173,7 @@ const DocumentViewer = ({ document, pageNumber, setPageNumber, numPages, setNumP
                 {/* Page Navigation Controls (Right Side) */}
                 <div className="flex items-center space-x-4">
                     <button
-                        onClick={() => setPageNumber((prev) => Math.max(prev - 1, 1))}
+                        onClick={() => handlePageChange(pageNumber - 1)}
                         disabled={pageNumber <= 1}
                         className="p-2 text-gray-600 hover:text-gray-800 disabled:text-gray-300 focus:outline-none"
                     >
@@ -141,11 +183,18 @@ const DocumentViewer = ({ document, pageNumber, setPageNumber, numPages, setNumP
                         Page {pageNumber} of {numPages}
                     </span>
                     <button
-                        onClick={() => setPageNumber((prev) => Math.min(prev + 1, numPages))}
+                        onClick={() => handlePageChange(pageNumber + 1)}
                         disabled={pageNumber >= numPages}
                         className="p-2 text-gray-600 hover:text-gray-800 disabled:text-gray-300 focus:outline-none"
                     >
                         <FaChevronRight size={18} />
+                    </button>
+                    {/* Save Button */}
+                    <button
+                        onClick={handleSaveProgress}
+                        className="p-2 text-gray-600 hover:text-gray-800 focus:outline-none"
+                    >
+                        <FaSave size={18} />
                     </button>
                 </div>
             </div>
