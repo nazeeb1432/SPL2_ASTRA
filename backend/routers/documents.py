@@ -149,8 +149,9 @@ async def view_document(document_id: int, db: Session = Depends(get_db)):
         "document_id": document.document_id,
         "title": document.title,
         "file_path": file_url,  # Return the URL for the frontend
+        "progress": document.progress,  # Include the progress information
+        "length": document.length
     }
-
 
 @document_router.get("/documents/{user_id}")
 async def get_user_documents(user_id: str, db: Session = Depends(get_db)):
