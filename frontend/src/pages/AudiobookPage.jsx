@@ -4,15 +4,14 @@ import AudiobookRow from "../components/AudiobookRow";
 import AudiobookPlayer from "../components/AudiobookPlayer";
 import { useAuthContext } from "../context/AuthContext";
 import Cookies from "js-cookie";
-import GoToLibraryButton from "../components/GoToLibraryButton"; // Import the button component
-
+import GoToLibraryButton from "../components/GoToLibraryButton";
+import { FaHeadphones, FaMusic, FaPlayCircle } from "react-icons/fa"; // Import icons
 
 const AudiobookPage = () => {
     const [audiobooks, setAudiobooks] = useState([]);
     const [selectedAudiobook, setSelectedAudiobook] = useState(null);
     const { email: contextEmail } = useAuthContext();
     const email = contextEmail || Cookies.get("email");
-    
 
     useEffect(() => {
         const fetchAudiobooks = async () => {
@@ -33,17 +32,18 @@ const AudiobookPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 p-6">
+        <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-6">
             {/* Header with flex container */}
             <div className="flex justify-between items-center mb-8">
-                <h1 className="text-4xl font-extrabold text-purple-700">Your Audiobooks</h1>
-                <GoToLibraryButton /> 
+                <h1 className="text-4xl font-extrabold text-purple-700 flex items-center">
+                    <FaHeadphones className="mr-3" /> Your Audiobooks
+                </h1>
+                <GoToLibraryButton />
             </div>
-            
-            
+
             {/* Audiobook Player */}
             {selectedAudiobook && (
-                <div className="mb-16 p-6 bg-white rounded-lg shadow-2xl border border-gray-200">
+                <div className="mb-16 p-8 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg shadow-2xl text-white transform transition-all duration-500 hover:scale-105">
                     <AudiobookPlayer audiobook={selectedAudiobook} />
                 </div>
             )}
@@ -51,12 +51,25 @@ const AudiobookPage = () => {
             {/* Audiobook List */}
             <div className="space-y-4">
                 {audiobooks.map((audiobook) => (
-                    <AudiobookRow
+                    <div
                         key={audiobook.audiobook_id}
-                        audiobook={audiobook}
                         onClick={() => handleRowClick(audiobook)}
-                        className="hover:bg-purple-100 transition duration-300 ease-in-out p-4 rounded-lg shadow-md bg-white"
-                    />
+                        className={`p-6 rounded-lg shadow-md transition-all duration-300 ease-in-out ${
+                            selectedAudiobook?.audiobook_id === audiobook.audiobook_id
+                                ? "bg-gradient-to-br from-purple-100 to-blue-100 border-2 border-purple-300"
+                                : "bg-white hover:bg-purple-50"
+                        }`}
+                    >
+                        <div className="flex items-center space-x-4">
+                            <FaMusic className="text-purple-600 text-2xl" />
+                            <div>
+                                <h2 className="text-xl font-semibold text-gray-800">
+                                    {audiobook.document_title}
+                                </h2>
+                                <p className="text-sm text-gray-600">Voice ID: {audiobook.voice_id}</p>
+                            </div>
+                        </div>
+                    </div>
                 ))}
             </div>
         </div>
