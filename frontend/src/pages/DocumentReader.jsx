@@ -5,11 +5,13 @@ import PlaybackControls from "../components/PlaybackControls";
 import { useAuthContext } from "../context/AuthContext";
 import SummarizationPanel from "../components/SummarizationPanel";
 import NotesPanel from "../components/NotesPanel";
-import BookmarkPanel from "../components/BookmarkPanel";
-import HamburgerMenu from "../components/HamburgerMenu";
+import Notes from "../components/Notes";
+import DocumentSideRibbon from "../components/DocumentSideRibbon";
 import Cookies from "js-cookie";
 import GoToLibraryButton from "../components/GoToLibraryButton";
 import DocumentViewer from "../components/DocumentViewer";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const DocumentReader = () => {
     const { documentId } = useParams();
@@ -27,7 +29,8 @@ const DocumentReader = () => {
 
     const [showSummarizationPanel, setShowSummarizationPanel] = useState(false);
     const [showNotesPanel, setShowNotesPanel] = useState(false);
-    const [showBookmarkPanel, setShowBookmarkPanel] = useState(false);
+    const [showViewNotesPanel, setShowViewNotesPanel] = useState(false);
+    const [noteToEdit, setNoteToEdit] = useState(null);
 
     // Shift the main content to the left when the summarization panel is open
     const mainContentClass = showSummarizationPanel ? "mr-96" : "";
@@ -108,31 +111,77 @@ const DocumentReader = () => {
         if (section === "audiobooks") {
             window.location.href = "/audiobooks";
         } else if (section === "notes") {
-            setShowNotesPanel(true);
-            setShowBookmarkPanel(false);
+            // First close any other panels
             setShowSummarizationPanel(false);
-            window.scrollBy({ top: 1000, behavior: "smooth" });
-        } else if (section === "bookmarks") {
-            setShowBookmarkPanel(true);
+            setShowViewNotesPanel(false);
+            // Reset noteToEdit when creating a new note
+            setNoteToEdit(null);
+            // Open notes creation panel
+            setShowNotesPanel(true);
+            window.scrollBy({ top: 100, behavior: "smooth" });
+        } else if (section === "view-notes") {
+            // First close any other panels
             setShowNotesPanel(false);
             setShowSummarizationPanel(false);
-            window.scrollBy({ top: 1200, behavior: "smooth" });
-        } else if (section === "audiobook") {
-            window.scrollBy({ top: 800, behavior: "smooth" });
-        } else if (section === "summarization") {
-            window.scrollBy({ top: 800, behavior: "smooth" });
+            // Open notes viewing panel
+            setShowViewNotesPanel(true);
+            window.scrollBy({ top: 100, behavior: "smooth" });
         }
+    };
+
+    const handleToggleSummarization = () => {
+        // Close other panels first
+        setShowNotesPanel(false);
+        setShowViewNotesPanel(false);
+        // Open summarization panel
+        setShowSummarizationPanel(true);
+    };
+    
+    const handleCloseSummarization = () => {
+        setShowSummarizationPanel(false);
+    };
+
+    const handleEditNote = (note) => {
+        // Set the noteToEdit with the correct structure that matches what
+        // we expect in NotesPanel
+        setNoteToEdit(note);
+        setShowViewNotesPanel(false);
+        setShowNotesPanel(true);
+    };
+
+    const handleCloseNotes = () => {
+        setShowNotesPanel(false);
+        setNoteToEdit(null);
+    };
+
+    const handleCloseViewNotes = () => {
+        setShowViewNotesPanel(false);
     };
 
     const handleNavigateToPage = (pageNumber) => {
         setPageNumber(pageNumber);
     };
 
+    const handleNoteSaved = () => {
+        // When a note is saved, refresh the notes view
+        setShowNotesPanel(false);
+        setNoteToEdit(null);
+        
+        // If coming from notes view, go back to it
+        if (showViewNotesPanel || noteToEdit) {
+            setShowViewNotesPanel(true);
+        }
+    };
+
     return (
         <div className="p-6 bg-gray-50 min-h-screen">
-            {/* Hamburger Menu */}
-            <HamburgerMenu onNavigate={handleNavigate} />
-            <div className="fixed top-6 left-28 z-50">
+            {/* Document Side Ribbon */}
+            <DocumentSideRibbon
+                onNavigate={handleNavigate} 
+                onToggleSummarization={handleToggleSummarization} 
+            />
+            
+            <div className="fixed top-12 left-12 z-50">
                 <GoToLibraryButton />
             </div>
 
@@ -179,27 +228,31 @@ const DocumentReader = () => {
                             Generate Audiobook
                         </button>
 
-                        {/* Summarization Button */}
-                        <button
-                            onClick={() => setShowSummarizationPanel(!showSummarizationPanel)}
-                            className="w-full bg-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-purple-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-                        >
-                            {showSummarizationPanel ? "Hide Summarization" : "Show Summarization"}
-                        </button>
-
                         {/* Playback Controls with speed */}
                         <PlaybackControls audioPath={audioPath} playbackSpeed={playbackSpeed} />
                     </div>
 
                     {/* Notes Panel */}
-                    {showNotesPanel && <NotesPanel documentId={documentId} />}
+                    {showNotesPanel && (
+                        <div className="mt-6">
+                            <NotesPanel 
+                                documentId={documentId} 
+                                onClose={handleCloseNotes} 
+                                noteToEdit={noteToEdit} 
+                                onSave={handleNoteSaved}
+                            />
+                        </div>
+                    )}
 
-                    {/* Bookmark Panel */}
-                    {showBookmarkPanel && (
-                        <BookmarkPanel
-                            documentId={documentId}
-                            onNavigate={handleNavigateToPage}
-                        />
+                    {/* View Notes Panel */}
+                    {showViewNotesPanel && (
+                        <div className="mt-6">
+                            <Notes 
+                                documentId={documentId} 
+                                onEdit={handleEditNote}
+                                onClose={handleCloseViewNotes}
+                            />
+                        </div>
                     )}
 
                     {/* Summarization Panel */}
@@ -208,10 +261,14 @@ const DocumentReader = () => {
                             onSummarize={handleSummarize}
                             onGenerateKeywords={handleGenerateKeywords}
                             onWordMeaning={handleWordMeaning}
+                            onClose={handleCloseSummarization}
                         />
                     )}
                 </div>
             )}
+            
+            {/* Toast Container for notifications */}
+            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
         </div>
     );
 };

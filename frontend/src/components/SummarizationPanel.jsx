@@ -1,8 +1,7 @@
 import { useState } from "react";
-import api from "../utils/api";
-import { FaMagic, FaKey, FaBook, FaSync } from "react-icons/fa"; // Import icons
+import { FaMagic, FaKey, FaBook, FaSync, FaTimes } from "react-icons/fa"; // Added FaTimes for close icon
 
-const SummarizationPanel = ({ onSummarize, onGenerateKeywords, onWordMeaning }) => {
+const SummarizationPanel = ({ onSummarize, onGenerateKeywords, onWordMeaning, onClose }) => {
     const [inputText, setInputText] = useState("");
     const [outputText, setOutputText] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -53,17 +52,28 @@ const SummarizationPanel = ({ onSummarize, onGenerateKeywords, onWordMeaning }) 
 
     return (
         <div className="fixed right-0 top-0 h-full w-96 bg-gradient-to-br from-purple-50 to-blue-50 shadow-xl p-6 overflow-y-auto">
-            {/* Panel Header with Refresh Button */}
+            {/* Panel Header with Refresh and Close Buttons */}
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-purple-800 flex items-center">
-                    <FaMagic className="mr-2" /> Summarization & Keywords
-                </h2>
-                <button
-                    onClick={handleRefresh}
-                    className="p-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all duration-300"
+                <h1 className="text-2xl font-bold text-purple-800 flex items-center mt-4">
+                    <FaMagic className="mr-2" /> AI Enhancements
+                </h1>
+                <div className="flex items-center space-x-2 mt-4">
+                    <button
+                        onClick={handleRefresh}
+                        className="p-2 text-gray-500 rounded-lg hover:text-gray-700 transition-all duration-300"
+                    >
+                        <FaSync />
+                    </button>
+                    <button
+                    onClick={onClose}
+                    className="text-gray-500 hover:text-gray-700"
+                    aria-label="Close panel"
                 >
-                    <FaSync />
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                 </button>
+                </div>
             </div>
 
             {/* Input Text Area */}
@@ -116,5 +126,3 @@ const SummarizationPanel = ({ onSummarize, onGenerateKeywords, onWordMeaning }) 
 };
 
 export default SummarizationPanel;
-
-
