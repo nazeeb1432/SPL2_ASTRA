@@ -58,8 +58,11 @@ const DocumentViewer = ({ document: docData, pageNumber, setPageNumber, numPages
     const handlePageChange = (newPage) => {
         if (newPage > 0 && newPage <= numPages) {
             setPageNumber(newPage);
-            // Clear any bookmark highlights when changing pages
-            setShowBookmarkHighlight(null);
+            // Don't clear bookmark highlights when changing pages intentionally via navigation
+            // Only clear when using the prev/next buttons
+            if (!showBookmarkHighlight) {
+                setShowBookmarkHighlight(null);
+            }
         }
     };
 
@@ -147,8 +150,9 @@ const DocumentViewer = ({ document: docData, pageNumber, setPageNumber, numPages
 
     // Apply highlighting to the text layer after rendering
     useEffect(() => {
-        if ((searchTerm && searchResults.length > 0) || showBookmarkHighlight) {
-            setTimeout(() => {
+        if (textLayerRef.current) {
+            // Wait for the text layer to be fully rendered
+            const applyHighlights = () => {
                 if (searchTerm && searchResults.length > 0) {
                     highlightTextLayer(searchTerm, "search-highlight");
                 }
@@ -156,16 +160,25 @@ const DocumentViewer = ({ document: docData, pageNumber, setPageNumber, numPages
                 if (showBookmarkHighlight) {
                     highlightTextLayer(showBookmarkHighlight, "bookmark-highlight");
                 }
-            }, 100); // Short delay to ensure text layer is rendered
+            };
+            
+            // Use a short delay to ensure the text layer is ready
+            const timeoutId = setTimeout(applyHighlights, 200);
+            return () => clearTimeout(timeoutId);
         }
     }, [pageNumber, searchResults, currentResultIndex, searchTerm, showBookmarkHighlight]);
 
     const highlightTextLayer = (textToHighlight, highlightClass) => {
         if (!textLayerRef.current) return;
         
+        console.log(`Attempting to highlight: "${textToHighlight}" with class: ${highlightClass}`);
+        
         // Get the text layer element
         const textLayerElement = textLayerRef.current.querySelector(".react-pdf__Page__textContent");
-        if (!textLayerElement) return;
+        if (!textLayerElement) {
+            console.log("Text layer element not found");
+            return;
+        }
 
         // Remove any previous highlights of this class
         const existingHighlights = textLayerElement.querySelectorAll(`.${highlightClass}`);
@@ -181,6 +194,8 @@ const DocumentViewer = ({ document: docData, pageNumber, setPageNumber, numPages
         const textNodes = getTextNodesIn(textLayerElement);
         
         const textToHighlightLower = textToHighlight.toLowerCase();
+        let foundMatch = false;
+        
         textNodes.forEach((node) => {
             const nodeText = node.textContent;
             const nodeTextLower = nodeText.toLowerCase();
@@ -190,6 +205,7 @@ const DocumentViewer = ({ document: docData, pageNumber, setPageNumber, numPages
             
             if (index === -1) return;
             
+            foundMatch = true;
             // Create a document fragment to hold the new content
             const fragment = document.createDocumentFragment();
             
@@ -224,6 +240,12 @@ const DocumentViewer = ({ document: docData, pageNumber, setPageNumber, numPages
             // Replace the original node with the fragment
             node.parentNode.replaceChild(fragment, node);
         });
+        
+        if (!foundMatch) {
+            console.log(`No matches found for "${textToHighlight}"`);
+        } else {
+            console.log(`Successfully highlighted "${textToHighlight}"`);
+        }
     };
 
     // Helper function to get all text nodes within an element
@@ -344,8 +366,13 @@ const DocumentViewer = ({ document: docData, pageNumber, setPageNumber, numPages
 
     // Navigate to and highlight a bookmark
     const navigateToBookmark = (bookmark) => {
-        setPageNumber(bookmark.page_number);
+        // First set the bookmark text to highlight
         setShowBookmarkHighlight(bookmark.description);
+        console.log(`Navigating to bookmark: Page ${bookmark.page_number}, Text: "${bookmark.description}"`);
+        
+        // Then change the page
+        setPageNumber(bookmark.page_number);
+        
         // Close the bookmark panel after navigation
         setShowBookmarkPanel(false);
     };
@@ -486,7 +513,10 @@ const DocumentViewer = ({ document: docData, pageNumber, setPageNumber, numPages
                     </button>
                     
                     <button
-                        onClick={() => handlePageChange(pageNumber - 1)}
+                        onClick={() => {
+                            setShowBookmarkHighlight(null); // Clear highlight when navigating with buttons
+                            handlePageChange(pageNumber - 1);
+                        }}
                         disabled={pageNumber <= 1}
                         className="p-2 text-gray-600 hover:text-gray-800 disabled:text-gray-300 focus:outline-none"
                     >
@@ -496,7 +526,10 @@ const DocumentViewer = ({ document: docData, pageNumber, setPageNumber, numPages
                         Page {pageNumber} of {numPages}
                     </span>
                     <button
-                        onClick={() => handlePageChange(pageNumber + 1)}
+                        onClick={() => {
+                            setShowBookmarkHighlight(null); // Clear highlight when navigating with buttons
+                            handlePageChange(pageNumber + 1);
+                        }}
                         disabled={pageNumber >= numPages}
                         className="p-2 text-gray-600 hover:text-gray-800 disabled:text-gray-300 focus:outline-none"
                     >
@@ -556,13 +589,16 @@ const DocumentViewer = ({ document: docData, pageNumber, setPageNumber, numPages
                             renderTextLayer={true}
                             renderAnnotationLayer={true}
                             onRenderSuccess={() => {
-                                if (searchTerm && searchResults.length > 0) {
-                                    highlightTextLayer(searchTerm, "search-highlight");
-                                }
-                                
-                                if (showBookmarkHighlight) {
-                                    highlightTextLayer(showBookmarkHighlight, "bookmark-highlight");
-                                }
+                                // Add a delay to ensure text layer is fully rendered
+                                setTimeout(() => {
+                                    if (searchTerm && searchResults.length > 0) {
+                                        highlightTextLayer(searchTerm, "search-highlight");
+                                    }
+                                    
+                                    if (showBookmarkHighlight) {
+                                        highlightTextLayer(showBookmarkHighlight, "bookmark-highlight");
+                                    }
+                                }, 200);
                             }}
                         />
                     </Document>
