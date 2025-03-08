@@ -207,5 +207,3 @@ async def get_user_audiobooks(
     
     # Convert the dictionary values to a list
     return {"audiobooks": list(unique_audiobooks.values())}
-
-

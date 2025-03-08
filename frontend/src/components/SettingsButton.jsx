@@ -11,11 +11,12 @@ const SettingsButton = () => {
 
     return (
       <button
-      onClick={handleSettings}
-      className="w-full flex items-center gap-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors text-xl"
+        onClick={handleSettings}
+        className="w-full flex items-center gap-3 p-3 text-gray-700 hover:bg-gray-100 
+                  rounded-lg transition-colors text-base border border-gray-200"
       >
-      <FiSettings className="w-5 h-5 text-purple-600" />
-      <span>Settings</span>
+        <FiSettings className="w-5 h-5 text-purple-600" />
+        <span className="font-medium">Settings</span>
       </button>
     );
 };
