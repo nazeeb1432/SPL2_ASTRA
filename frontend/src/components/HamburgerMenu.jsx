@@ -34,12 +34,6 @@ const HamburgerMenu = ({ onNavigate }) => {
                         View Notes
                     </button>
                     <button
-                        onClick={() => handleMenuItemClick("bookmarks")}
-                        className="block w-full text-left font-semibold hover:bg-blue-700 hover:text-white hover:font-bold p-2 rounded-lg transition-colors duration-200"
-                    >
-                        Add Bookmark
-                    </button>
-                    <button
                         onClick={() => handleMenuItemClick("audiobooks")}
                         className="block w-full text-left font-semibold hover:bg-blue-700 hover:text-white hover:font-bold p-2 rounded-lg transition-colors duration-200"
                     >
