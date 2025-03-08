@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { FiMoreVertical } from "react-icons/fi";
+import { FiMoreVertical, FiFolder } from "react-icons/fi";
 import api from "../utils/api";
 
 const LibraryFolder = ({ folder, renameFolder, deleteFolder, refreshLibrary, openFolder }) => {
@@ -26,53 +26,56 @@ const LibraryFolder = ({ folder, renameFolder, deleteFolder, refreshLibrary, ope
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-4 relative">
+    <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 p-4 relative">
       <button
         onClick={() => openFolder(folder.folder_id)}
         className="w-full flex flex-col items-center"
       >
         <div className="w-16 h-16 bg-blue-50 rounded-lg flex items-center justify-center mb-3">
-          <span className="text-3xl">📁</span>
+          <FiFolder className="text-blue-500 w-8 h-8" />
         </div>
-        <h3 className="font-medium text-gray-800 text-center truncate">{folder.folder_name}</h3>
+        <h3 className="font-medium text-gray-800 text-center truncate w-full">{folder.folder_name}</h3>
       </button>
 
       <div className="absolute top-3 right-3">
         <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100"
+          onClick={(e) => {
+            e.stopPropagation();
+            setMenuOpen(!menuOpen);
+          }}
+          className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
         >
           <FiMoreVertical className="w-5 h-5" />
         </button>
 
         {menuOpen && (
-          <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-10">
+          <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-10">
             <button
               onClick={() => {
                 renameFolder();
                 setMenuOpen(false);
               }}
-              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50"
+              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors"
             >
               Rename
-            </button>
-            <button
-              onClick={() => {
-                deleteFolder();
-                setMenuOpen(false);
-              }}
-              className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
-            >
-              Delete
             </button>
             <button
               onClick={() => {
                 fileInputRef.current.click();
                 setMenuOpen(false);
               }}
-              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50"
+              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors"
             >
               Add File
+            </button>
+            <button
+              onClick={() => {
+                deleteFolder();
+                setMenuOpen(false);
+              }}
+              className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-colors"
+            >
+              Delete
             </button>
           </div>
         )}

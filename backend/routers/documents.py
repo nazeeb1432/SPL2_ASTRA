@@ -131,28 +131,6 @@ async def upload_document(
             pdf_path.unlink()
         raise HTTPException(status_code=500, detail="Internal server error")
 
-
-@document_router.get("/documents/view/{document_id}")
-async def view_document(document_id: int, db: Session = Depends(get_db)):
-    document = db.query(Document).filter(Document.document_id == document_id).first()
-
-    if not document:
-        logger.warning(f"Document with ID {document_id} not found in database!")
-        raise HTTPException(status_code=404, detail="Document not found")
-
-    logger.info(f"Serving document: {document.file_path}")
-
-    # Convert the local file path to a URL for the frontend
-    file_url = f"http://127.0.0.1:8000/uploads/{Path(document.file_path).name}"
-
-    return {
-        "document_id": document.document_id,
-        "title": document.title,
-        "file_path": file_url,  # Return the URL for the frontend
-        "progress": document.progress,  # Include the progress information
-        "length": document.length
-    }
-
 @document_router.get("/documents/{user_id}")
 async def get_user_documents(user_id: str, db: Session = Depends(get_db)):
     logger.info(f"Fetching documents for user: {user_id}")
