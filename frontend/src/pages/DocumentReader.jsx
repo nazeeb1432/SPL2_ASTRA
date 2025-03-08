@@ -6,7 +6,6 @@ import { useAuthContext } from "../context/AuthContext";
 import SummarizationPanel from "../components/SummarizationPanel";
 import NotesPanel from "../components/NotesPanel";
 import Notes from "../components/Notes";
-import BookmarkPanel from "../components/BookmarkPanel";
 import HamburgerMenu from "../components/HamburgerMenu";
 import Cookies from "js-cookie";
 import GoToLibraryButton from "../components/GoToLibraryButton";
@@ -31,7 +30,6 @@ const DocumentReader = () => {
     const [showSummarizationPanel, setShowSummarizationPanel] = useState(false);
     const [showNotesPanel, setShowNotesPanel] = useState(false);
     const [showViewNotesPanel, setShowViewNotesPanel] = useState(false);
-    const [showBookmarkPanel, setShowBookmarkPanel] = useState(false);
     const [noteToEdit, setNoteToEdit] = useState(null);
 
     // Shift the main content to the left when the summarization panel is open
@@ -114,7 +112,6 @@ const DocumentReader = () => {
             window.location.href = "/audiobooks";
         } else if (section === "notes") {
             // First close any other panels
-            setShowBookmarkPanel(false);
             setShowSummarizationPanel(false);
             setShowViewNotesPanel(false);
             // Reset noteToEdit when creating a new note
@@ -125,20 +122,11 @@ const DocumentReader = () => {
         } else if (section === "view-notes") {
             // First close any other panels
             setShowNotesPanel(false);
-            setShowBookmarkPanel(false);
             setShowSummarizationPanel(false);
             // Open notes viewing panel
             setShowViewNotesPanel(true);
             window.scrollBy({ top: 100, behavior: "smooth" });
-        } else if (section === "bookmarks") {
-            // Close all other panels
-            setShowNotesPanel(false);
-            setShowViewNotesPanel(false);
-            setShowSummarizationPanel(false);
-            // Open bookmarks panel
-            setShowBookmarkPanel(true);
-            window.scrollBy({ top: 100, behavior: "smooth" });
-        } 
+        }
     };
 
     const handleEditNote = (note) => {
@@ -245,7 +233,6 @@ const DocumentReader = () => {
                             onClick={() => {
                                 setShowNotesPanel(false);
                                 setShowViewNotesPanel(false);
-                                setShowBookmarkPanel(false);
                                 setShowSummarizationPanel(!showSummarizationPanel);
                             }}
                             className="w-full bg-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-purple-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
@@ -276,16 +263,6 @@ const DocumentReader = () => {
                                 documentId={documentId} 
                                 onEdit={handleEditNote}
                                 onClose={handleCloseViewNotes}
-                            />
-                        </div>
-                    )}
-
-                    {/* Bookmark Panel */}
-                    {showBookmarkPanel && (
-                        <div className="mt-6">
-                            <BookmarkPanel
-                                documentId={documentId}
-                                onNavigate={handleNavigateToPage}
                             />
                         </div>
                     )}
