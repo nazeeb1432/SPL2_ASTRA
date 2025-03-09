@@ -29,6 +29,8 @@ const PlaybackControls = ({ audioPath, playbackSpeed }) => {
         }
     }, [playbackSpeed, audioPath]);
 
+    console.log("PlaybackControls: audioPath =", audioPath); // Log the audioPath
+
     return (
         <div className="mt-4">
             <ReactAudioPlayer
