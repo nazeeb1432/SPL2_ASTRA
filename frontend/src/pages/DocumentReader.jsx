@@ -23,6 +23,7 @@ const DocumentReader = () => {
     const [numPages, setNumPages] = useState(null);
     const [pageNumber, setPageNumber] = useState(1);
     const [isLoading, setIsLoading] = useState(true);
+    const [isGeneratingAudiobook, setIsGeneratingAudiobook] = useState(false); // Track audiobook generation status
 
     const { email: contextEmail } = useAuthContext();
     const email = contextEmail || Cookies.get("email");
@@ -80,18 +81,43 @@ const DocumentReader = () => {
     const generateAudiobook = async () => {
         if (!selectedVoice) return alert("Please select a voice!");
         try {
+            setIsGeneratingAudiobook(true); // Start audiobook generation
             const response = await api.post(`/audiobooks/generate/${documentId}`, {
                 voice_id: selectedVoice,
                 user_id: email,
             });
-            setAudioPath(response.data.file_path);
+    
+            console.log("Audiobook generation started. Audiobook ID:", response.data.audiobook_id);
+    
+            // Start polling to check if the audiobook is ready
+            const pollAudiobookStatus = async () => {
+                try {
+                    const statusResponse = await api.get(`/audiobooks/status/${response.data.audiobook_id}`);
+                    console.log("Polling status:", statusResponse.data);
+    
+                    if (statusResponse.data.status === "completed") {
+                        // Use the full URL returned by the backend
+                        setAudioPath(statusResponse.data.file_path); // Update audioPath state
+                        console.log("Audiobook ready. File path:", statusResponse.data.file_path);
+                        setIsGeneratingAudiobook(false); // Stop polling
+                    } else {
+                        // If not completed, poll again after 5 seconds
+                        setTimeout(pollAudiobookStatus, 5000);
+                    }
+                } catch (error) {
+                    console.error("Error polling audiobook status:", error);
+                    setIsGeneratingAudiobook(false); // Stop polling on error
+                }
+            };
+    
+            pollAudiobookStatus(); // Start polling
             alert("Audiobook generation started!");
         } catch (error) {
             console.error("Error:", error.response?.data || error.message);
             alert("Audiobook generation failed");
+            setIsGeneratingAudiobook(false); // Stop polling on error
         }
     };
-
     const handleSummarize = async (text) => {
         const response = await api.post("api/summarize", { text });
         return response.data.summary;
