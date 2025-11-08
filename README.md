@@ -33,3 +33,22 @@
 - **Gemini API** – AI-powered natural language processing for summaries, keywords, and definitions
 - **FastAPI** - Lightweight framework for the backend. 
 ---
+
+## 📸 Screenshots
+
+### 🏠 Home Page
+![Home Page](assets/home.png)
+
+### 📚 Library
+![Library](assets/Library.png)
+
+### 📖 Document Viewer
+![Document Viewer](assets/DocViewer.png)
+
+### 🎧 Audiobook Mode
+![Audiobook Mode](assets/audio_book.png)
+
+### ⚙️ Settings
+![Settings](assets/settings.png)
+
+---
